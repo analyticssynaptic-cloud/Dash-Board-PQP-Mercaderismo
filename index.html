@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard PQP · Synaptic</title>
+<title>Dashboard PQP V2 · Synaptic</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -33,8 +33,6 @@ svg{pointer-events:none}a{color:var(--b1)}
 .sbi:hover{background:#f0f4ff;color:var(--b1)}
 .sbi.on{background:linear-gradient(135deg,var(--b1),var(--b2));color:#fff;box-shadow:var(--sh-sm)}
 .sbi svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
-.sbi .badge{background:rgba(255,255,255,.25);color:#fff;font-size:10px;padding:1px 6px;border-radius:20px;margin-left:auto}
-.sbi:not(.on) .badge{background:#eef2f9;color:var(--muted)}
 .sb-footer{padding:14px 18px;border-top:1px solid var(--line);font-size:11px;color:var(--muted)}
 .sb-footer b{color:var(--b1);font-family:'Outfit';font-weight:800;letter-spacing:1px}
 .refresh-badge{display:inline-flex;align-items:center;gap:5px;background:#dcfce7;color:#15803d;font-family:'Outfit';font-weight:700;font-size:10.5px;padding:3px 9px;border-radius:20px;margin-top:6px}
@@ -59,9 +57,9 @@ svg{pointer-events:none}a{color:var(--b1)}
 
 .content{flex:1;overflow-y:auto;padding:20px 22px 40px}
 
-/* ─── KPI Cards gradiente ─── */
-.kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:13px;margin-bottom:20px}
-.kc{border-radius:var(--r);padding:18px 18px 16px;color:#fff;position:relative;overflow:hidden;animation:slideUp .4s ease both}
+/* ─── KPI Cards (proporción áurea: ancho:alto ≈ 1.618:1) ─── */
+.kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(194px,1fr));gap:13px;margin-bottom:20px}
+.kc{border-radius:var(--r);padding:18px 18px 16px;color:#fff;position:relative;overflow:hidden;animation:slideUp .4s ease both;aspect-ratio:1.618/1;display:flex;flex-direction:column;justify-content:center}
 .kc::before{content:'';position:absolute;right:-22px;bottom:-22px;width:88px;height:88px;border-radius:50%;background:rgba(255,255,255,.12)}
 .kc::after{content:'';position:absolute;right:12px;top:-12px;width:55px;height:55px;border-radius:50%;background:rgba(255,255,255,.07)}
 .kc-ic{width:40px;height:40px;border-radius:12px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;margin-bottom:12px}
@@ -86,6 +84,7 @@ svg{pointer-events:none}a{color:var(--b1)}
 .tag{font-family:'Outfit';font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:700;background:var(--line2);padding:3px 9px;border-radius:20px;white-space:nowrap}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
 .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:16px}
+/* gphi: 61.8% / 38.2% = proporción áurea */
 .gphi{display:grid;grid-template-columns:61.8% 1fr;gap:16px;margin-bottom:16px}
 .h300{height:300px;position:relative}
 .h260{height:260px;position:relative}
@@ -154,6 +153,33 @@ tbody tr:hover{background:#f7faff}
 .prog-fill{height:100%;border-radius:5px;transition:width .5s}
 .prog-val{font-family:'Outfit';font-weight:700;font-size:12px;color:var(--b1);width:44px;text-align:right}
 
+/* ─── Galería antes/después ─── */
+.gal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.gal-card{background:#fff;border-radius:var(--r-sm);box-shadow:var(--sh);overflow:hidden;animation:slideUp .4s ease both}
+.gal-imgs{display:grid;grid-template-columns:1fr 1fr}
+.gal-imgs a{display:block;position:relative;aspect-ratio:1/1;overflow:hidden;background:var(--line2)}
+.gal-imgs img{width:100%;height:100%;object-fit:cover;display:block}
+.gal-imgs span{position:absolute;left:6px;top:6px;background:rgba(15,39,71,.72);color:#fff;font-family:'Outfit';font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:20px}
+.gal-imgs .ph{display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:11px;height:100%}
+.gal-info{padding:11px 13px}
+.gal-info b{font-family:'Outfit';font-size:12.5px;display:block;color:var(--ink)}
+.gal-info span{font-size:11px;color:var(--muted)}
+
+/* ─── Línea de tiempo de visita ─── */
+.tlw{display:flex;flex-direction:column;gap:0}
+.tl-item{display:flex;gap:13px;padding:13px 0;border-bottom:1px solid var(--line2)}
+.tl-item:last-child{border-bottom:none}
+.tl-dot-col{display:flex;flex-direction:column;align-items:center;width:14px;flex-shrink:0}
+.tl-dot{width:11px;height:11px;border-radius:50%;background:var(--b1);flex-shrink:0;margin-top:3px}
+.tl-line{flex:1;width:2px;background:var(--line);margin-top:3px}
+.tl-body{flex:1;min-width:0}
+.tl-head{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.tl-name{font-family:'Outfit';font-weight:800;font-size:13.5px;color:var(--ink)}
+.tl-dur{font-family:'Outfit';font-weight:700;font-size:11.5px;color:var(--b1);background:var(--line2);padding:2px 9px;border-radius:20px;white-space:nowrap}
+.tl-meta{font-size:11.5px;color:var(--muted);margin-top:3px}
+.tl-mods{font-size:10.5px;color:var(--muted);margin-top:5px;line-height:1.5}
+.tl-mods b{color:var(--b1)}
+
 @keyframes slideUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
@@ -187,35 +213,29 @@ tbody tr:hover{background:#f7faff}
 <symbol id="i-star" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></symbol>
 <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></symbol>
 <symbol id="i-img" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></symbol>
+<symbol id="i-tag" viewBox="0 0 24 24"><path d="M20.59 13.41L13.42 20.58a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></symbol>
+<symbol id="i-pkg" viewBox="0 0 24 24"><path d="M16.5 9.4l-9-5.19M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></symbol>
+<symbol id="i-user" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
 </svg>
 
 <!-- Sidebar -->
 <nav class="sidebar">
   <div class="sb-brand">
     <div class="sb-logo">S</div>
-    <div class="sb-txt"><b>SYNAPTIC</b><span>Analytics PQP</span></div>
+    <div class="sb-txt"><b>SYNAPTIC</b><span>Analytics PQP · V2</span></div>
   </div>
   <div class="sb-nav">
     <div class="sb-sep">Análisis</div>
-    <button class="sbi on" data-v="resumen" onclick="setV('resumen')">
-      <svg viewBox="0 0 24 24"><use href="#i-grid"/></svg><span>Resumen</span>
-    </button>
-    <button class="sbi" data-v="ventas" onclick="setV('ventas')">
-      <svg viewBox="0 0 24 24"><use href="#i-trend"/></svg><span>Ventas</span>
-    </button>
-    <button class="sbi" data-v="pedidos" onclick="setV('pedidos')">
-      <svg viewBox="0 0 24 24"><use href="#i-cart"/></svg><span>Pedidos</span>
-    </button>
-    <button class="sbi" data-v="inventario" onclick="setV('inventario')">
-      <svg viewBox="0 0 24 24"><use href="#i-box"/></svg><span>Inventario</span>
-    </button>
+    <button class="sbi on" data-v="resumen" onclick="setV('resumen')"><svg viewBox="0 0 24 24"><use href="#i-grid"/></svg><span>Resumen</span></button>
+    <button class="sbi" data-v="ventas" onclick="setV('ventas')"><svg viewBox="0 0 24 24"><use href="#i-trend"/></svg><span>Ventas</span></button>
+    <button class="sbi" data-v="sugerido" onclick="setV('sugerido')"><svg viewBox="0 0 24 24"><use href="#i-cart"/></svg><span>Sugerido</span></button>
+    <button class="sbi" data-v="inventario" onclick="setV('inventario')"><svg viewBox="0 0 24 24"><use href="#i-box"/></svg><span>Inventario</span></button>
+    <button class="sbi" data-v="muestraspop" onclick="setV('muestraspop')"><svg viewBox="0 0 24 24"><use href="#i-pkg"/></svg><span>Muestras y POP</span></button>
+    <button class="sbi" data-v="chequeo" onclick="setV('chequeo')"><svg viewBox="0 0 24 24"><use href="#i-tag"/></svg><span>Chek Precios</span></button>
     <div class="sb-sep">Equipo</div>
-    <button class="sbi" data-v="equipo" onclick="setV('equipo')">
-      <svg viewBox="0 0 24 24"><use href="#i-users"/></svg><span>Equipo</span>
-    </button>
-    <button class="sbi" data-v="visitas" onclick="setV('visitas')">
-      <svg viewBox="0 0 24 24"><use href="#i-map"/></svg><span>Visitas</span>
-    </button>
+    <button class="sbi" data-v="equipo" onclick="setV('equipo')"><svg viewBox="0 0 24 24"><use href="#i-users"/></svg><span>Equipo</span></button>
+    <button class="sbi" data-v="galeria" onclick="setV('galeria')"><svg viewBox="0 0 24 24"><use href="#i-img"/></svg><span>Galería</span></button>
+    <button class="sbi" data-v="visitas" onclick="setV('visitas')"><svg viewBox="0 0 24 24"><use href="#i-map"/></svg><span>Visitas</span></button>
   </div>
   <div class="sb-footer">
     <b>SYNAPTIC</b> · Analytics
@@ -228,9 +248,7 @@ tbody tr:hover{background:#f7faff}
   <div class="topbar">
     <div class="tb-title" id="tbTitle">Resumen<span id="tbSub">Cargando...</span></div>
     <div class="fil-bar" id="filtros"></div>
-    <button class="btn pri" onclick="cargar()">
-      <svg viewBox="0 0 24 24"><use href="#i-refresh"/></svg>Actualizar
-    </button>
+    <button class="btn pri" onclick="cargar()"><svg viewBox="0 0 24 24"><use href="#i-refresh"/></svg>Actualizar</button>
   </div>
   <div class="content" id="content">
     <div class="state"><div class="spin"></div><h3>Cargando datos…</h3><p>Consultando la hoja Registros</p></div>
@@ -239,15 +257,15 @@ tbody tr:hover{background:#f7faff}
 
 <script>
 // ═══════════════════════════════════════════════════════
-// CONFIG
+// CONFIG — reemplaza por la URL del despliegue de DashboardV2.gs
 // ═══════════════════════════════════════════════════════
-const DASH_URL = 'https://script.google.com/macros/s/AKfycbyJea-8wogCybPbYxHFVhaoj-p6xpqaBJqQyePVGrvcZREcdAd4WazI_to1OnE91E2uDw/exec';
+const DASH_URL = 'https://script.google.com/macros/s/AKfycbw6gtyJBa1_JcXlsJMhgWc7QRBqGoGDMwlBW8keirJNa919quiV8iBB1EBv4wIWlbYD3Q/exec';
 
 let TODOS = [], VISTA = 'resumen', CH = {};
 let F = { merc:'', ciudad:'', desde:'', hasta:'', mes:'', anio:'' };
 let rTimer = null, rMins = 60;
 
-const TITULOS = {resumen:'Resumen General',ventas:'Análisis de Ventas',pedidos:'Pedidos',inventario:'Inventario',equipo:'Equipo en Campo',visitas:'Mapa de Visitas'};
+const TITULOS = {resumen:'Resumen General',ventas:'Análisis de Ventas',sugerido:'Sugerido',inventario:'Inventario',muestraspop:'Muestras y Material POP',chequeo:'Chek de Precios',equipo:'Equipo en Campo',galeria:'Galería Antes / Después',visitas:'Mapa y Línea de Tiempo de Visitas'};
 const COLORES = ['#004a99','#0086e6','#7c3aed','#0d9488','#f97316','#db2777','#d97706','#dc2626','#16a34a','#00c9e6'];
 
 // ═══════════════════════════════════════════════════════
@@ -264,10 +282,9 @@ async function cargar() {
     render();
     autoRefresh();
   } catch(e) {
-    set('<div class="state"><h3>Sin conexión</h3><p>Verifica la URL del Dashboard.gs · '+e.message+'</p></div>');
+    set('<div class="state"><h3>Sin conexión</h3><p>Verifica la URL del DashboardV2.gs · '+e.message+'</p></div>');
   }
 }
-
 function autoRefresh() {
   clearInterval(rTimer);
   let m = rMins;
@@ -284,10 +301,17 @@ function autoRefresh() {
 // ═══════════════════════════════════════════════════════
 function norm(r) {
   r.fecha = r.timestamp ? new Date(r.timestamp) : null;
+  r.fechaInicio = r.horaInicio ? new Date(r.horaInicio) : r.fecha;
+  r.duracionMs = (r.fecha && r.fechaInicio) ? Math.max(0, r.fecha - r.fechaInicio) : 0;
   r.totalPedido = num(r.pedidoTotalFinal);
   r.numProductos = (r.pedidoProductos||[]).length;
   r.tieneVenta = r.ventaRealizada === 'Si';
   r.tienePedido = r.numProductos > 0;
+  r.numMuestras = (r.muestrasProductos||[]).length;
+  r.numPOPEntregado = (r.materialPOPEntregado||[]).length;
+  r.chequeos = (r.chequeoPrecios||[]);
+  r.chequeosOk = r.chequeos.filter(c=>c.dentroDelRango===true||c.dentroDelRango==='true').length;
+  r.chequeosFuera = r.chequeos.length - r.chequeosOk;
   if (r.fecha) { r.hora = r.fecha.getHours(); r.dow = r.fecha.getDay(); r.anio = r.fecha.getFullYear(); r.mes = r.fecha.getMonth()+1; }
   return r;
 }
@@ -296,8 +320,8 @@ function fmt(n) { return '$'+Number(n||0).toLocaleString('es-CO',{maximumFractio
 function fN(n) { return Number(n||0).toLocaleString('es-CO'); }
 function esc(s) { return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 function ini(n) { return String(n||'?').trim().split(/\s+/).slice(0,2).map(p=>p[0]||'').join('').toUpperCase(); }
-function dImg(u) { const m=String(u||'').match(/[-\w]{25,}/); return m?'https://drive.google.com/thumbnail?id='+m[0]+'&sz=w120':''; }
-function hhmm(ms) { const h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000); return h?h+'h '+m+'m':m+'m'; }
+function dImg(u) { const m=String(u||'').match(/[-\w]{25,}/); return m?'https://drive.google.com/thumbnail?id='+m[0]+'&sz=w400':''; }
+function hhmm(ms) { if(!ms) return '—'; const h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000); return h?h+'h '+m+'m':m+'m'; }
 function set(html) { destroyCharts(); document.getElementById('content').innerHTML = html; }
 function destroyCharts() { Object.values(CH).forEach(c=>{try{c.destroy()}catch(e){}}); CH={}; }
 
@@ -324,9 +348,7 @@ function pintarFiltros() {
     </div>
     <div class="fil"><label>Desde</label><input type="date" value="${F.desde}" onchange="setF('desde',this.value)"></div>
     <div class="fil"><label>Hasta</label><input type="date" value="${F.hasta}" onchange="setF('hasta',this.value)"></div>
-    <button class="btn danger" onclick="limpiarF()" style="align-self:flex-end">
-      <svg viewBox="0 0 24 24"><use href="#i-xc"/></svg>Limpiar
-    </button>`;
+    <button class="btn danger" onclick="limpiarF()" style="align-self:flex-end"><svg viewBox="0 0 24 24"><use href="#i-xc"/></svg>Limpiar</button>`;
 }
 function setF(k,v) { F[k]=v; render(); }
 function limpiarF() { F={merc:'',ciudad:'',desde:'',hasta:'',mes:'',anio:''}; pintarFiltros(); render(); }
@@ -358,7 +380,7 @@ function render() {
   document.getElementById('tbSub').textContent = sub;
   const cont = document.getElementById('content');
   if (!d.length && TODOS.length) { cont.innerHTML='<div class="state"><h3>Sin datos para el filtro</h3><p>Ajusta los segmentadores.</p></div>'; return; }
-  const views = {resumen:vResumen,ventas:vVentas,pedidos:vPedidos,inventario:vInventario,equipo:vEquipo,visitas:vVisitas};
+  const views = {resumen:vResumen,ventas:vVentas,sugerido:vSugerido,inventario:vInventario,muestraspop:vMuestrasPop,chequeo:vChequeo,equipo:vEquipo,galeria:vGaleria,visitas:vVisitas};
   (views[VISTA]||vResumen)(cont, d);
 }
 
@@ -369,7 +391,7 @@ function kc(g,ic,val,lbl,sub='') {
 function card(h,tag,body) { return `<div class="card"><div class="card-h"><h3>${h}</h3>${tag?`<span class="tag">${tag}</span>`:''}</div>${body}</div>`; }
 function topList(d, campo, porFrec, max=10) {
   const m={};
-  d.forEach(r=>(r[campo]||[]).forEach(p=>{ const k=p.sku||p.producto||'—'; m[k]=(m[k]||0)+(porFrec?1:num(p.cantidad)||1); }));
+  d.forEach(r=>(r[campo]||[]).forEach(p=>{ const k=p.sku||p.producto||p.nombre||'—'; m[k]=(m[k]||0)+(porFrec?1:num(p.cantidad)||1); }));
   const e=Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,max);
   if(!e.length) return '<div class="empty">Sin datos</div>';
   const mx=Math.max(...e.map(x=>x[1]));
@@ -407,6 +429,10 @@ function vResumen(cont,d) {
   const mercs=new Set(d.map(r=>r.nombre).filter(Boolean)).size;
   const agot=d.reduce((s,r)=>s+(r.agotados||[]).length,0);
   const fc=d.reduce((s,r)=>s+(r.fechasCortas||[]).length,0);
+  const muestras=d.reduce((s,r)=>s+r.numMuestras,0);
+  const popEnt=d.reduce((s,r)=>s+r.numPOPEntregado,0);
+  const durVal=d.filter(r=>r.duracionMs>0);
+  const durProm=durVal.length?durVal.reduce((s,r)=>s+r.duracionMs,0)/durVal.length:0;
 
   const p=porDia(d), lbl=p.labels.map(k=>k.slice(5));
   const ciu={}; d.forEach(r=>{const k=r.ciudad||'—';ciu[k]=(ciu[k]||0)+r.totalPedido;});
@@ -417,34 +443,38 @@ function vResumen(cont,d) {
   <div class="kpis">
     ${kc('k-blue','i-grid',fN(d.length),'Gestiones totales',mercs+' mercaderistas')}
     ${kc('k-green','i-check',fN(vts),'Ventas concretadas',conv+'% conversión')}
-    ${kc('k-cyan','i-dollar',fmt(tPed),'Total pedidos','Ticket '+fmt(ticket))}
-    ${kc('k-purple','i-cart',fN(nPed),'Pedidos generados','')}
+    ${kc('k-cyan','i-dollar',fmt(tPed),'Total sugerido','Ticket '+fmt(ticket))}
+    ${kc('k-purple','i-cart',fN(nPed),'Pedidos sugeridos','')}
     ${kc('k-teal','i-store',fN(pdvs),'PDV visitados','')}
     ${kc('k-orange','i-xc',fN(agot),'Agotados','')}
     ${kc('k-pink','i-clock',fN(fc),'Fechas cortas','')}
-    ${kc('k-amber','i-img',fN(d.filter(r=>r.fotoAntes||r.fotoDespues).length),'Gestiones con fotos','')}
+    ${kc('k-amber','i-pkg',fN(muestras),'Muestras entregadas','')}
+    ${kc('k-red','i-img',fN(d.filter(r=>r.fotoAntes||r.fotoDespues).length),'Gestiones con fotos','')}
+    ${kc('k-blue','i-tag',fN(popEnt),'Material POP entregado','')}
+    ${kc('k-cyan','i-clock',hhmm(durProm),'Duración promedio visita','entrada → salida')}
+    ${kc('k-purple','i-star',fN(d.filter(r=>r.tieneExhibicion==='Si').length),'Exhibiciones ganadas','')}
   </div>
   <div class="gphi" style="margin-bottom:16px">
-    ${card('Tendencia gestiones y pedidos','Diaria · línea de tendencia','<div class="h300"><canvas id="chT"></canvas></div>')}
+    ${card('Tendencia gestiones y sugerido','Diaria · línea de tendencia','<div class="h300"><canvas id="chT"></canvas></div>')}
     <div style="display:flex;flex-direction:column;gap:14px">
       ${card('Conversión','Sí / No','<div class="h200"><canvas id="chC"></canvas></div>')}
       ${card('Material POP','Estado','<div style="height:170px;position:relative"><canvas id="chP"></canvas></div>')}
     </div>
   </div>
   <div class="g2">
-    ${card('Pedidos por ciudad','Valor',`<div class="h260"><canvas id="chCiu"></canvas></div>`)}
-    ${card('Top productos en pedido','Unidades',`<div style="max-height:280px;overflow-y:auto">${topList(d,'pedidoProductos',false)}</div>`)}
+    ${card('Sugerido por ciudad','Valor',`<div class="h260"><canvas id="chCiu"></canvas></div>`)}
+    ${card('Top productos sugeridos','Unidades',`<div style="max-height:280px;overflow-y:auto">${topList(d,'pedidoProductos',false)}</div>`)}
   </div>`;
 
   CH.t=new Chart(document.getElementById('chT'),{data:{labels:lbl,datasets:[
     {type:'line',label:'Gestiones',data:p.gest,borderColor:'#004a99',backgroundColor:'rgba(0,74,153,.1)',fill:true,tension:.35,pointRadius:4,yAxisID:'y'},
     {type:'line',label:'Tendencia',data:reg(p.gest),borderColor:'#00d2ff',borderDash:[6,5],pointRadius:0,tension:0,yAxisID:'y'},
-    {type:'bar',label:'Pedidos $',data:p.val,backgroundColor:'rgba(124,58,237,.3)',borderRadius:6,yAxisID:'y1'}
+    {type:'bar',label:'Sugerido $',data:p.val,backgroundColor:'rgba(124,58,237,.3)',borderRadius:6,yAxisID:'y1'}
   ]},options:baseOpts({y:{beginAtZero:true},y1:{position:'right',beginAtZero:true,grid:{drawOnChartArea:false},ticks:{callback:v=>'$'+(v/1000).toFixed(0)+'k'}}})});
 
   CH.c=new Chart(document.getElementById('chC'),{type:'doughnut',data:{labels:['Con venta','Sin venta'],datasets:[{data:[vts,d.length-vts],backgroundColor:['#16a34a','#e2e8f0'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'66%',plugins:{legend:{position:'bottom',labels:{font:{family:'DM Sans',size:11},usePointStyle:true}}}}});
   CH.p=new Chart(document.getElementById('chP'),{type:'doughnut',data:{labels:['Completo','Sin POP','Parcial'],datasets:[{data:[pop.Si,pop.No,pop.Parcial],backgroundColor:['#0d9488','#dc2626','#f97316'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'60%',plugins:{legend:{position:'bottom',labels:{font:{family:'DM Sans',size:11},usePointStyle:true,boxWidth:8}}}}});
-  CH.ciu=new Chart(document.getElementById('chCiu'),{type:'bar',data:{labels:ciuE.map(x=>x[0]),datasets:[{label:'Pedidos $',data:ciuE.map(x=>x[1]),backgroundColor:ciuE.map((_,i)=>COLORES[i]||'#004a99'),borderRadius:8}]},options:baseOpts({y:{beginAtZero:true,ticks:{callback:v=>'$'+(v/1000).toFixed(0)+'k'}}},true)});
+  CH.ciu=new Chart(document.getElementById('chCiu'),{type:'bar',data:{labels:ciuE.map(x=>x[0]),datasets:[{label:'Sugerido $',data:ciuE.map(x=>x[1]),backgroundColor:ciuE.map((_,i)=>COLORES[i]||'#004a99'),borderRadius:8}]},options:baseOpts({y:{beginAtZero:true,ticks:{callback:v=>'$'+(v/1000).toFixed(0)+'k'}}},true)});
 }
 
 // ═══════════════════════════════════════════════════════
@@ -467,7 +497,7 @@ function vVentas(cont,d) {
     ${kc('k-green','i-check',fN(vts),'Ventas','')}
     ${kc('k-red','i-xc',fN(nvts),'Sin venta','')}
     ${kc('k-cyan','i-trend',conv+'%','Conversión','')}
-    ${kc('k-purple','i-dollar',fmt(tPed),'Pedidos','')}
+    ${kc('k-purple','i-dollar',fmt(tPed),'Sugerido','')}
   </div>
   <div class="gphi" style="margin-bottom:16px">
     ${card('Tendencia ventas diaria','Con venta vs Sin venta','<div class="h300"><canvas id="chVT"></canvas></div>')}
@@ -494,14 +524,14 @@ function vVentas(cont,d) {
 }
 
 // ═══════════════════════════════════════════════════════
-// VISTA: PEDIDOS
+// VISTA: SUGERIDO (antes "Pedidos")
 // ═══════════════════════════════════════════════════════
-function vPedidos(cont,d) {
+function vSugerido(cont,d) {
   const cp=d.filter(r=>r.tienePedido).sort((a,b)=>(b.fecha||0)-(a.fecha||0));
   const total=cp.reduce((s,r)=>s+r.totalPedido,0);
   const und=cp.reduce((s,r)=>s+(r.pedidoProductos||[]).reduce((a,p)=>a+num(p.cantidad),0),0);
   const ticket=cp.length?total/cp.length:0;
-  const promos=cp.reduce((s,r)=>s+num(r.pedidoPromos),0);
+  const promos=cp.filter(r=>r.pedidoPromos).length;
   const pm={}; cp.forEach(r=>{const k=r.nombre||'—';if(!pm[k])pm[k]={n:0,v:0};pm[k].n++;pm[k].v+=r.totalPedido;});
   const pmE=Object.entries(pm).sort((a,b)=>b[1].v-a[1].v);
 
@@ -516,26 +546,26 @@ function vPedidos(cont,d) {
 
   cont.innerHTML=`
   <div class="kpis" style="grid-template-columns:repeat(5,1fr)">
-    ${kc('k-blue','i-cart',fN(cp.length),'Pedidos','')}
+    ${kc('k-blue','i-cart',fN(cp.length),'Sugeridos generados','')}
     ${kc('k-cyan','i-dollar',fmt(total),'Valor total','')}
     ${kc('k-green','i-box',fN(und),'Unidades','')}
     ${kc('k-purple','i-trend',fmt(ticket),'Ticket promedio','')}
-    ${kc('k-orange','i-star',fmt(promos),'Promociones','')}
+    ${kc('k-orange','i-star',fN(promos),'Con promociones','')}
   </div>
   <div class="gphi" style="margin-bottom:16px">
-    ${card('Pedidos recientes',cp.length+' registros',`<div class="tw"><table>
+    ${card('Sugeridos recientes',cp.length+' registros',`<div class="tw"><table>
       <thead><tr><th>Fecha</th><th>Mercaderista</th><th>Ciudad</th><th>PDV</th><th class="r">Ítems</th><th class="r">Total</th></tr></thead>
-      <tbody>${rows||'<tr><td colspan="6" class="empty">Sin pedidos</td></tr>'}</tbody>
+      <tbody>${rows||'<tr><td colspan="6" class="empty">Sin sugeridos</td></tr>'}</tbody>
     </table></div>`)}
     <div style="display:flex;flex-direction:column;gap:14px">
-      ${card('Top productos pedidos','Unidades',`<div style="max-height:300px;overflow-y:auto">${topList(cp,'pedidoProductos',false)}</div>`)}
+      ${card('Top productos sugeridos','Unidades',`<div style="max-height:300px;overflow-y:auto">${topList(cp,'pedidoProductos',false)}</div>`)}
       ${card('Por mercaderista','Valor','<div class="tl">'+pmE.slice(0,8).map(([k,v],i)=>`<div class="tr2"><div class="rk${i<3?' g'+(i+1):''}">${i+1}</div><div class="nm">${esc(k)}</div><div class="vl">${fmt(v.v)}</div></div>`).join('')+'</div>')}
     </div>
   </div>`;
 }
 
 // ═══════════════════════════════════════════════════════
-// VISTA: INVENTARIO
+// VISTA: INVENTARIO (+ Exhibición, Agotados, Fechas cortas)
 // ═══════════════════════════════════════════════════════
 function vInventario(cont,d) {
   const agL=[]; d.forEach(r=>(r.agotados||[]).forEach(a=>agL.push({...a,pdv:r.pdv,merc:r.nombre})));
@@ -544,13 +574,16 @@ function vInventario(cont,d) {
   const invP=d.reduce((s,r)=>s+(r.inventarioProductos||[]).length,0);
   const pdvAg={}; d.forEach(r=>{if((r.agotados||[]).length){const k=r.pdv||'—';pdvAg[k]=(pdvAg[k]||0)+(r.agotados||[]).length;}});
   const pdvE=Object.entries(pdvAg).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const exh=d.filter(r=>r.tieneExhibicion==='Si');
+  const exhTipo={}; exh.forEach(r=>{const k=r.tipoExhibicion||'—';exhTipo[k]=(exhTipo[k]||0)+1;});
 
   cont.innerHTML=`
-  <div class="kpis" style="grid-template-columns:repeat(4,1fr)">
+  <div class="kpis" style="grid-template-columns:repeat(5,1fr)">
     ${kc('k-orange','i-xc',fN(agL.length),'Agotados reportados','')}
     ${kc('k-red','i-clock',fN(fcL.length),'Fechas cortas','')}
     ${kc('k-blue','i-box',fN(invP),'Refs. en inventario','')}
     ${kc('k-teal','i-store',fN(new Set(d.map(r=>r.pdv).filter(Boolean)).size),'PDV con inventario','')}
+    ${kc('k-purple','i-star',fN(exh.length),'Exhibiciones ganadas','')}
   </div>
   <div class="g2">
     ${card('Top productos agotados','Frecuencia',`<div style="max-height:280px;overflow-y:auto">${topList(d,'agotados',true)}</div>`)}
@@ -562,24 +595,97 @@ function vInventario(cont,d) {
       <tbody>${fcL.length?fcL.slice(0,50).map(f=>`<tr><td><b>${esc(f.sku||f.producto||'—')}</b></td><td>${esc(f.vence||'—')}</td><td class="r">${esc(f.cantidad||0)}</td><td>${esc(f.pdv||'—')}</td><td>${esc(f.merc||'—')}</td></tr>`).join(''):'<tr><td colspan="5" class="empty">Sin fechas cortas</td></tr>'}</tbody>
     </table></div>`)}
     ${card('Top inventario','Refs. más frecuentes',`<div style="max-height:280px;overflow-y:auto">${topList(d,'inventarioProductos',true)}</div>`)}
+  </div>
+  <div class="g2">
+    ${card('Tipos de exhibición ganada','Frecuencia',Object.keys(exhTipo).length?'<div class="tl">'+Object.entries(exhTipo).sort((a,b)=>b[1]-a[1]).map(([k,v],i)=>`<div class="tr2"><div class="rk${i<3?' g'+(i+1):''}">${i+1}</div><div class="nm">${esc(k)}</div><div class="vl">${v}</div></div>`).join('')+'</div>':'<div class="empty">Sin exhibiciones</div>')}
+    ${card('Top productos en exhibición','Unidades',`<div style="max-height:280px;overflow-y:auto">${topList(d,'exhibicionProductos',false)}</div>`)}
   </div>`;
 }
 
 // ═══════════════════════════════════════════════════════
-// VISTA: EQUIPO
+// VISTA: MUESTRAS Y MATERIAL POP
+// ═══════════════════════════════════════════════════════
+function vMuestrasPop(cont,d) {
+  const muestras=d.reduce((s,r)=>s+r.numMuestras,0);
+  const pop=d.reduce((s,r)=>s+r.numPOPEntregado,0);
+  const pdvMuestras=new Set(d.filter(r=>r.numMuestras>0).map(r=>r.pdv)).size;
+  const pdvPop=new Set(d.filter(r=>r.numPOPEntregado>0).map(r=>r.pdv)).size;
+  const popEstado={Si:0,No:0,Parcial:0}; d.forEach(r=>{if(popEstado[r.materialPOP]!=null)popEstado[r.materialPOP]++;});
+
+  cont.innerHTML=`
+  <div class="kpis" style="grid-template-columns:repeat(4,1fr)">
+    ${kc('k-amber','i-pkg',fN(muestras),'Muestras entregadas',pdvMuestras+' PDV')}
+    ${kc('k-blue','i-tag',fN(pop),'Material POP entregado',pdvPop+' PDV')}
+    ${kc('k-teal','i-check',fN(popEstado.Si),'POP en buen estado','')}
+    ${kc('k-red','i-xc',fN(popEstado.No)+' / '+fN(popEstado.Parcial),'POP malo / parcial','')}
+  </div>
+  <div class="g2">
+    ${card('Top muestras entregadas','Unidades',`<div style="max-height:300px;overflow-y:auto">${topList(d,'muestrasProductos',false)}</div>`)}
+    ${card('Top material POP entregado','Unidades',`<div style="max-height:300px;overflow-y:auto">${topList(d,'materialPOPEntregado',false)}</div>`)}
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════════
+// VISTA: CHEQUEO DE PRECIOS
+// ═══════════════════════════════════════════════════════
+function vChequeo(cont,d) {
+  const chL=[]; d.forEach(r=>(r.chequeoPrecios||[]).forEach(c=>chL.push({...c,pdv:r.pdv,merc:r.nombre,fecha:r.fecha})));
+  const compL=[]; d.forEach(r=>(r.chequeoCompetencia||[]).forEach(c=>compL.push({...c,pdv:r.pdv,merc:r.nombre,fecha:r.fecha})));
+  const ok=chL.filter(c=>c.dentroDelRango===true||c.dentroDelRango==='true').length;
+  const fuera=chL.length-ok;
+  const pctOk=chL.length?Math.round(ok/chL.length*100):0;
+
+  const rowsCh=chL.slice().sort((a,b)=>(b.fecha||0)-(a.fecha||0)).slice(0,80).map(c=>`<tr>
+    <td><b>${esc(c.sku||'—')}</b></td>
+    <td class="r">${fmt(c.precioEncontrado)}</td>
+    <td class="r">${fmt(c.precioReferencia)}</td>
+    <td>${(c.dentroDelRango===true||c.dentroDelRango==='true')?'<span class="pill psi">Dentro de rango</span>':'<span class="pill pno">Fuera de rango</span>'}</td>
+    <td>${esc(c.pdv||'—')}</td>
+  </tr>`).join('');
+
+  const rowsComp=compL.slice().sort((a,b)=>(b.fecha||0)-(a.fecha||0)).slice(0,80).map(c=>`<tr>
+    <td><b>${esc(c.producto||'—')}</b></td>
+    <td class="r">${fmt(c.valor)}</td>
+    <td>${esc(c.tipo||'Normal')}</td>
+    <td>${esc(c.pdv||'—')}</td>
+  </tr>`).join('');
+
+  cont.innerHTML=`
+  <div class="kpis" style="grid-template-columns:repeat(4,1fr)">
+    ${kc('k-blue','i-tag',fN(chL.length),'Chequeos propios','')}
+    ${kc('k-green','i-check',pctOk+'%','Dentro del rango ±10%',ok+' de '+chL.length)}
+    ${kc('k-red','i-xc',fN(fuera),'Fuera de rango','')}
+    ${kc('k-purple','i-cart',fN(compL.length),'Chequeos competencia','')}
+  </div>
+  <div class="g2">
+    ${card('Chequeos de precio propio','Recientes',`<div class="tw"><table>
+      <thead><tr><th>Producto</th><th class="r">Encontrado</th><th class="r">Referencia</th><th>Estado</th><th>PDV</th></tr></thead>
+      <tbody>${rowsCh||'<tr><td colspan="5" class="empty">Sin chequeos</td></tr>'}</tbody>
+    </table></div>`)}
+    ${card('Chequeos de competencia','Recientes',`<div class="tw"><table>
+      <thead><tr><th>Producto</th><th class="r">Valor</th><th>Condición</th><th>PDV</th></tr></thead>
+      <tbody>${rowsComp||'<tr><td colspan="4" class="empty">Sin chequeos</td></tr>'}</tbody>
+    </table></div>`)}
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════════
+// VISTA: EQUIPO (con foto de perfil y duración de visita)
 // ═══════════════════════════════════════════════════════
 function vEquipo(cont,d) {
   const mapa={};
   d.forEach(r=>{
     const k=r.nombre||'—';
-    if(!mapa[k]) mapa[k]={nombre:k,foto:r.fotoPerfil,ciudad:r.ciudad,g:0,v:0,total:0,ped:0,agot:0,fechas:[]};
+    if(!mapa[k]) mapa[k]={nombre:k,foto:r.fotoPerfil,ciudad:r.ciudad,g:0,v:0,total:0,ped:0,agot:0,fechas:[],durs:[]};
     const o=mapa[k]; o.g++; if(r.tieneVenta)o.v++; o.total+=r.totalPedido; if(r.tienePedido)o.ped++;
     o.agot+=(r.agotados||[]).length; if(r.fecha)o.fechas.push(r.fecha); if(r.fotoPerfil)o.foto=r.fotoPerfil;
+    if(r.duracionMs>0) o.durs.push(r.duracionMs);
   });
 
   const arr=Object.values(mapa).map(m=>{
     m.conv=m.g?Math.round(m.v/m.g*100):0;
     m.ticket=m.ped?m.total/m.ped:0;
+    m.durProm=m.durs.length?m.durs.reduce((a,x)=>a+x,0)/m.durs.length:0;
     if(m.fechas.length>1){
       const s=m.fechas.slice().sort((a,b)=>a-b);
       const diffs=s.slice(1).map((f,i)=>f-s[i]);
@@ -602,12 +708,13 @@ function vEquipo(cont,d) {
       <div class="mc-kpis">
         <div class="mk"><b>${m.g}</b><span>Gestiones</span></div>
         <div class="mk"><b>${m.conv}%</b><span>Conversión</span></div>
-        <div class="mk"><b>${fmt(m.total)}</b><span>Pedidos</span></div>
+        <div class="mk"><b>${fmt(m.total)}</b><span>Sugerido</span></div>
       </div>
       <div>
         <div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--muted);margin-bottom:3px"><span>Participación total</span><span>${Math.round(m.total/maxT*100)}%</span></div>
         <div class="pb"><div class="pbf" style="width:${Math.round(m.total/maxT*100)}%"></div></div>
       </div>
+      ${m.durProm?`<div class="mc-gap"><svg style="width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2;vertical-align:-2px" viewBox="0 0 24 24"><use href="#i-clock"/></svg> Duración promedio en PDV: <b>${hhmm(m.durProm)}</b></div>`:''}
       ${m.gapMs?`<div class="mc-gap"><svg style="width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2;vertical-align:-2px" viewBox="0 0 24 24"><use href="#i-clock"/></svg> Promedio entre visitas: <b>${hhmm(m.gapMs)}</b></div>`:''}
       <div class="mc-gap"><svg style="width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2;vertical-align:-2px" viewBox="0 0 24 24"><use href="#i-xc"/></svg> Agotados reportados: <b>${m.agot}</b></div>
     </div>`;
@@ -617,14 +724,44 @@ function vEquipo(cont,d) {
   <div class="kpis" style="grid-template-columns:repeat(4,1fr)">
     ${kc('k-blue','i-users',fN(arr.length),'Mercaderistas activos','')}
     ${kc('k-green','i-check',fN(tV),'Ventas del equipo','')}
-    ${kc('k-cyan','i-dollar',fmt(tT),'Total en pedidos','')}
+    ${kc('k-cyan','i-dollar',fmt(tT),'Total sugerido','')}
     ${kc('k-purple','i-trend',avgC+'%','Conversión promedio','')}
   </div>
   <div class="team-grid">${cards}</div>`;
 }
 
 // ═══════════════════════════════════════════════════════
-// VISTA: VISITAS (heatmap)
+// VISTA: GALERÍA ANTES/DESPUÉS
+// ═══════════════════════════════════════════════════════
+function vGaleria(cont,d) {
+  const g=d.filter(r=>r.fotoAntes||r.fotoDespues).sort((a,b)=>(b.fecha||0)-(a.fecha||0));
+  const cards=g.map(r=>{
+    const ia=dImg(r.fotoAntes), ib=dImg(r.fotoDespues);
+    return `<div class="gal-card">
+      <div class="gal-imgs">
+        <a href="${esc(r.fotoAntes||'#')}" target="_blank">${ia?`<img src="${ia}" alt="Antes" loading="lazy">`:'<div class="ph">Sin foto</div>'}<span>Antes</span></a>
+        <a href="${esc(r.fotoDespues||'#')}" target="_blank">${ib?`<img src="${ib}" alt="Después" loading="lazy">`:'<div class="ph">Sin foto</div>'}<span>Después</span></a>
+      </div>
+      <div class="gal-info">
+        <b>${esc(r.pdv||'—')} · ${esc(r.ciudad||'—')}</b>
+        <span>${esc(r.nombre||'—')} · ${r.fecha?r.fecha.toLocaleDateString('es-CO'):'—'}</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  cont.innerHTML=`
+  <div class="kpis" style="grid-template-columns:repeat(3,1fr)">
+    ${kc('k-blue','i-img',fN(g.length),'Visitas con registro fotográfico','')}
+    ${kc('k-green','i-check',fN(g.filter(r=>r.fotoAntes&&r.fotoDespues).length),'Con Antes y Después completos','')}
+    ${kc('k-orange','i-clock',fN(g.filter(r=>!r.fotoDespues).length),'Pendientes foto Después','')}
+  </div>
+  <div class="card"><div class="card-h"><h3>Galería Antes / Después</h3><span class="tag">${g.length} visitas</span></div>
+    ${g.length?`<div class="gal-grid">${cards}</div>`:'<div class="empty">Sin fotos registradas</div>'}
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════════
+// VISTA: VISITAS (heatmap + línea de tiempo entrada→salida)
 // ═══════════════════════════════════════════════════════
 function vVisitas(cont,d) {
   const dias=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
@@ -656,15 +793,25 @@ function vVisitas(cont,d) {
 
   const dowCnt=Array(7).fill(0); d.forEach(r=>{if(r.dow!=null)dowCnt[r.dow]++;});
   const horas=Array(24).fill(0); d.forEach(r=>{if(r.hora!=null)horas[r.hora]++;});
-  const ciuG={}; d.forEach(r=>{const k=r.ciudad||'—';ciuG[k]=(ciuG[k]||0)+1;});
-  const ciuE=Object.entries(ciuG).sort((a,b)=>b[1]-a[1]);
-  const pdvG={}; d.forEach(r=>{if(r.pdv){const k=r.pdv;pdvG[k]=(pdvG[k]||0)+1;}});
-  const pdvE=Object.entries(pdvG).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const pdvE=Object.entries(d.reduce((m,r)=>{if(r.pdv){m[r.pdv]=(m[r.pdv]||0)+1;}return m;},{})).sort((a,b)=>b[1]-a[1]).slice(0,10);
   const pdvs=new Set(d.map(r=>r.pdv).filter(Boolean)).size;
   const cius=new Set(d.map(r=>r.ciudad).filter(Boolean)).size;
   const mercs=new Set(d.map(r=>r.nombre).filter(Boolean)).size;
 
-  const maxCiu=Math.max(1,...ciuE.map(x=>x[1]));
+  // Línea de tiempo: últimas visitas con hora de entrada (Hora Inicio) y salida (Timestamp)
+  const recientes=d.slice().sort((a,b)=>(b.fecha||0)-(a.fecha||0)).slice(0,25);
+  const tlHtml=recientes.length?'<div class="tlw">'+recientes.map((r,i)=>`
+    <div class="tl-item">
+      <div class="tl-dot-col"><div class="tl-dot"></div>${i<recientes.length-1?'<div class="tl-line"></div>':''}</div>
+      <div class="tl-body">
+        <div class="tl-head"><span class="tl-name">${esc(r.nombre||'—')} · ${esc(r.pdv||'—')}</span><span class="tl-dur">${hhmm(r.duracionMs)}</span></div>
+        <div class="tl-meta">Entrada ${r.fechaInicio?r.fechaInicio.toLocaleString('es-CO',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—'} → Salida ${r.fecha?r.fecha.toLocaleString('es-CO',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—'} · ${esc(r.ciudad||'—')}</div>
+        <div class="tl-mods">${(r.modulosGuardados||'').split(',').filter(Boolean).map(m=>'<b>'+esc(m.trim())+'</b>').join(' → ')||'Sin módulos guardados'}</div>
+      </div>
+    </div>`).join('')+'</div>':'<div class="empty">Sin visitas registradas</div>';
+
+  const maxCiu=Math.max(1,...Object.values(d.reduce((m,r)=>{const k=r.ciudad||'—';m[k]=(m[k]||0)+1;return m;},{})));
+  const ciuE=Object.entries(d.reduce((m,r)=>{const k=r.ciudad||'—';m[k]=(m[k]||0)+1;return m;},{})).sort((a,b)=>b[1]-a[1]);
 
   cont.innerHTML=`
   <div class="kpis" style="grid-template-columns:repeat(4,1fr)">
@@ -683,6 +830,10 @@ function vVisitas(cont,d) {
   <div class="g2">
     ${card('Gestiones por ciudad','Total','<div class="tl">'+ciuE.map(([k,v],i)=>`<div class="tr2"><div class="rk${i<3?' g'+(i+1):''}">${i+1}</div><div class="nm">${esc(k)}</div><div class="bar" style="width:${Math.round(v/maxCiu*110)+6}px"></div><div class="vl">${v}</div></div>`).join('')+'</div>')}
     ${card('Distribución horaria','Por hora del día','<div class="h260"><canvas id="chHVis"></canvas></div>')}
+  </div>
+  <div class="card">
+    <div class="card-h"><h3>Línea de tiempo · entrada → salida</h3><span class="tag">${recientes.length} más recientes</span></div>
+    ${tlHtml}
   </div>`;
 
   const clrs=['#dc2626','#16a34a','#0086e6','#f97316','#7c3aed','#0d9488','#db2777'];
