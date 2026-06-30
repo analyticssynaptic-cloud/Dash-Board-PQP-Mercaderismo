@@ -169,6 +169,28 @@ svg{pointer-events:none}a{color:var(--p2);text-decoration:none}
 .ic-orange{background:#ffedd5;color:#c2410c}.ic-purple{background:#ede9fe;color:#6d28d9}.ic-pink{background:#fce7f3;color:#be185d}
 .ic-cyan{background:#cffafe;color:#0e7490}.ic-teal{background:#ccfbf1;color:#0f766e}.ic-amber{background:#fef3c7;color:#a16207}
 
+/* ═══════ HIGHLIGHTS · destacados con info expandida ═══════ */
+.hl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-bottom:12px}
+.hl{background:#fff;border:1px solid var(--line-2);border-radius:12px;padding:13px 14px;position:relative;overflow:hidden;animation:slideUp .35s ease both;transition:.15s}
+.hl:hover{border-color:var(--line);box-shadow:var(--sh);transform:translateY(-1px)}
+.hl::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,var(--p1),var(--p3))}
+.hl.hl-gold::before{background:linear-gradient(180deg,#fbbf24,#d97706)}
+.hl.hl-green::before{background:linear-gradient(180deg,#16a34a,#15803d)}
+.hl.hl-pink::before{background:linear-gradient(180deg,#ec4899,#9d174d)}
+.hl.hl-teal::before{background:linear-gradient(180deg,#14b8a6,#0f766e)}
+.hl-head{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:6px}
+.hl-tag{font-family:'Plus Jakarta Sans';font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:800;display:inline-flex;align-items:center;gap:4px}
+.hl-tag svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2.2}
+.hl-crown{font-size:13px}
+.hl-title{font-family:'Plus Jakarta Sans';font-weight:800;font-size:14px;color:var(--ink);line-height:1.2;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px}
+.hl-meta{font-size:11px;color:var(--muted);line-height:1.4}
+.hl-meta b{color:var(--p2);font-family:'Plus Jakarta Sans';font-weight:700}
+.hl-foot{display:flex;justify-content:space-between;gap:8px;font-size:10px;color:var(--muted-2);margin-top:7px;padding-top:7px;border-top:1px dashed var(--line)}
+.hl-foot b{font-family:'Plus Jakarta Sans';color:var(--ink);font-weight:700}
+
+/* ═══════ Mini sparkline en KPI ═══════ */
+.kpi-spark{position:absolute;right:-2px;bottom:-2px;width:60px;height:30px;opacity:.45;pointer-events:none}
+
 /* ═══════════════════════════════════════════════════════════ */
 /* Cards / layouts                                             */
 /* ═══════════════════════════════════════════════════════════ */
@@ -507,6 +529,89 @@ const TITULOS={visitas:'Visitas',resumen:'Resumen',equipo:'Equipo',ventas:'Venta
 const SUBS={visitas:'Trazabilidad de campo y cobertura',resumen:'Vista ejecutiva',equipo:'Mercaderistas y desempeño',ventas:'Conversión y valor monetizado',sugerido:'Pedidos sugeridos',chequeo:'Mix de precios propio vs competencia',inventario:'Stock en estante',agotados:'Alertas y patrones',fechas:'Productos próximos a vencer',muestraspop:'Muestras y material POP entregado',galeria:'Antes y después · click para ampliar'};
 const COLORES=['#1d4ed8','#06b6d4','#7c3aed','#0d9488','#f97316','#db2777','#d97706','#dc2626','#16a34a','#0ea5e9'];
 
+// ═══════════ CHART.JS DEFAULTS pro ═══════════
+Chart.defaults.font.family='Inter';
+Chart.defaults.font.size=11;
+Chart.defaults.color='#6b7796';
+Chart.defaults.plugins.tooltip.backgroundColor='rgba(11,19,48,.96)';
+Chart.defaults.plugins.tooltip.titleColor='#fff';
+Chart.defaults.plugins.tooltip.bodyColor='#dbe3f0';
+Chart.defaults.plugins.tooltip.titleFont={family:'Plus Jakarta Sans',weight:'700',size:12};
+Chart.defaults.plugins.tooltip.bodyFont={family:'Inter',size:11.5};
+Chart.defaults.plugins.tooltip.padding=11;
+Chart.defaults.plugins.tooltip.cornerRadius=10;
+Chart.defaults.plugins.tooltip.displayColors=true;
+Chart.defaults.plugins.tooltip.boxPadding=5;
+Chart.defaults.plugins.tooltip.borderColor='rgba(255,255,255,.08)';
+Chart.defaults.plugins.tooltip.borderWidth=1;
+Chart.defaults.plugins.tooltip.caretSize=6;
+
+// Gradient helper para áreas
+function grad(ctx,c1,c2,h){
+  const g=ctx.createLinearGradient(0,0,0,h||220);
+  g.addColorStop(0,c1);g.addColorStop(1,c2);return g;
+}
+
+// ═══════════ HELPERS de TOP/MAX ═══════════
+function topProducto(d,campo,byUnidades){
+  const m={};
+  d.forEach(r=>(r[campo]||[]).forEach(p=>{
+    const k=p.sku||p.producto||p.nombre||'—';
+    if(!m[k])m[k]={u:0,v:0};
+    const c=num(p.cantidad)||0;m[k].u+=c;
+    const ref=SKU_MAP[k];
+    m[k].v+=c*(ref?ref.precio:num(p.precio)||0);
+  }));
+  const arr=Object.entries(m).sort((a,b)=>byUnidades?b[1].u-a[1].u:b[1].v-a[1].v);
+  return arr[0]?{nombre:arr[0][0],u:arr[0][1].u,v:arr[0][1].v}:null;
+}
+function topCategoria(d){
+  const m={};
+  d.forEach(r=>(r.ventaProductos||[]).forEach(p=>{
+    const ref=SKU_MAP[p.sku];
+    const cat=ref?ref.categoria:(p.categoria||'Sin categoría');
+    if(!m[cat])m[cat]={v:0,u:0};
+    const c=num(p.cantidad)||0;m[cat].u+=c;m[cat].v+=c*(ref?ref.precio:0);
+  }));
+  const arr=Object.entries(m).sort((a,b)=>b[1].v-a[1].v);
+  return arr[0]?{nombre:arr[0][0],u:arr[0][1].u,v:arr[0][1].v}:null;
+}
+function topPDV(d,porValor){
+  const m={};
+  d.forEach(r=>{if(!r.pdv)return;if(!m[r.pdv])m[r.pdv]={v:0,n:0,ciudad:r.ciudad};m[r.pdv].v+=r.valorVenta;m[r.pdv].n++});
+  const arr=Object.entries(m).sort((a,b)=>porValor?b[1].v-a[1].v:b[1].n-a[1].n);
+  return arr[0]?{nombre:arr[0][0],v:arr[0][1].v,n:arr[0][1].n,ciudad:arr[0][1].ciudad}:null;
+}
+function topPDVSugerido(d){
+  const m={};
+  d.forEach(r=>{if(!r.pdv||!r.tienePedido)return;if(!m[r.pdv])m[r.pdv]={v:0,n:0,ciudad:r.ciudad};m[r.pdv].v+=r.totalPedido;m[r.pdv].n++});
+  const arr=Object.entries(m).sort((a,b)=>b[1].v-a[1].v);
+  return arr[0]?{nombre:arr[0][0],v:arr[0][1].v,n:arr[0][1].n,ciudad:arr[0][1].ciudad}:null;
+}
+function mayorVenta(d){
+  let max=null;
+  d.forEach(r=>{if(r.valorVenta>0&&(!max||r.valorVenta>max.valorVenta))max=r});
+  return max;
+}
+function mayorSugerido(d){
+  let max=null;
+  d.forEach(r=>{if(r.totalPedido>0&&(!max||r.totalPedido>max.totalPedido))max=r});
+  return max;
+}
+function topMercaderista(d,porVentas){
+  const m={};
+  d.forEach(r=>{const k=r.nombre||'—';if(!m[k])m[k]={n:0,v:0,vts:0};m[k].n++;m[k].v+=r.valorVenta;if(r.tieneVenta)m[k].vts++});
+  const arr=Object.entries(m).sort((a,b)=>porVentas?b[1].vts-a[1].vts:b[1].v-a[1].v);
+  return arr[0]?{nombre:arr[0][0],n:arr[0][1].n,v:arr[0][1].v,vts:arr[0][1].vts}:null;
+}
+function reg(y){
+  const n=y.length;if(n<2)return y.slice();
+  let sx=0,sy=0,sxy=0,sxx=0;
+  for(let i=0;i<n;i++){sx+=i;sy+=y[i];sxy+=i*y[i];sxx+=i*i}
+  const m2=(n*sxy-sx*sy)/(n*sxx-sx*sx||1),b=(sy-m2*sx)/n;
+  return y.map((_,i)=>Math.max(0,m2*i+b));
+}
+
 // ═══════════ LOGIN ═══════════
 function msg(t,ok){const el=document.getElementById('lMsg');el.textContent=t;el.className='login-msg on '+(ok?'ok':'err')}
 function clearMsg(){document.getElementById('lMsg').classList.remove('on')}
@@ -691,6 +796,15 @@ function kpi(icCls,ic,val,lbl,sub,trend){
   </div>`;
 }
 function card(h,tag,body,extraCls){return `<div class="card ${extraCls||''}"><div class="card-h"><h3>${h}</h3>${tag?(typeof tag==='string'?`<span class="tag">${tag}</span>`:`<span class="tag ${tag.cls||''}">${tag.txt}</span>`):''}</div>${body}</div>`}
+// Highlight card (top producto, mayor venta, etc.)
+function hl(color,tagIcon,tagTxt,title,metaHtml,footL,footR){
+  return `<div class="hl hl-${color}">
+    <div class="hl-head"><span class="hl-tag"><svg><use href="#${tagIcon}"/></svg>${tagTxt}</span><span class="hl-crown">★</span></div>
+    <div class="hl-title" title="${esc(title)}">${esc(title)}</div>
+    <div class="hl-meta">${metaHtml}</div>
+    ${(footL||footR)?`<div class="hl-foot"><span>${footL||''}</span><span>${footR||''}</span></div>`:''}
+  </div>`;
+}
 function topList(d,campo,porFrec,max=8){
   const m={};
   d.forEach(r=>(r[campo]||[]).forEach(p=>{const k=p.sku||p.producto||p.nombre||'—';m[k]=(m[k]||0)+(porFrec?1:num(p.cantidad)||1)}));
@@ -722,13 +836,16 @@ function vVisitas(cont,d){
   const durProm=durVal.length?durVal.reduce((s,r)=>s+r.duracionMs,0)/durVal.length:0;
   const conGPS=d.filter(r=>r.lat&&r.lng).length;
   const conFotos=d.filter(r=>r.fotoAntes||r.fotoDespues).length;
+  const topPdv=topPDV(d,false);
+  const topMerc=topMercaderista(d,false);
+  const ult7=d.filter(r=>r.fecha&&(Date.now()-r.fecha)<7*86400000).length;
 
   const dias=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
   const bloques=['6a','7a','8a','9a','10a','11a','12p','1p','2p','3p','4p','5p','6p','7p','8p'];
   const grid=Array.from({length:7},()=>Array(15).fill(0));
   d.forEach(r=>{if(r.hora==null||r.dow==null)return;const hi=Math.min(Math.max(r.hora-6,0),14);grid[r.dow][hi]++});
   const maxHM=Math.max(1,...grid.flat());
-  const hmHtml=`<div class="hm-wrap"><div class="hm-head">${bloques.map(b=>`<span>${b}</span>`).join('')}</div><div class="hm">${dias.map((dia,i)=>`<div class="hm-row"><div class="hm-lbl">${dia}</div>${grid[i].map((v,j)=>{const pct=v/maxHM;const bg=v?`rgba(29,78,216,${0.12+pct*.8})`:'#f5f7fb';const col=pct>0.55?'#fff':'#9aa3bd';return `<div class="hm-cell" title="${dia} ${bloques[j]}: ${v}" style="background:${bg};color:${col}">${v||''}</div>`}).join('')}</div>`).join('')}</div></div>`;
+  const hmHtml=`<div class="hm-wrap"><div class="hm-head">${bloques.map(b=>`<span>${b}</span>`).join('')}</div><div class="hm">${dias.map((dia,i)=>`<div class="hm-row"><div class="hm-lbl">${dia}</div>${grid[i].map((v,j)=>{const pct=v/maxHM;const bg=v?`rgba(29,78,216,${0.12+pct*.8})`:'#f5f7fb';const col=pct>0.55?'#fff':'#9aa3bd';return `<div class="hm-cell" title="${dia} ${bloques[j]}: ${v} visita${v===1?'':'s'}" style="background:${bg};color:${col}">${v||''}</div>`}).join('')}</div>`).join('')}</div></div>`;
 
   const recientes=d.slice().sort((a,b)=>(b.fecha||0)-(a.fecha||0)).slice(0,10);
   const tlHtml=recientes.length?'<div class="tlw">'+recientes.map((r,i)=>{
@@ -743,10 +860,10 @@ function vVisitas(cont,d){
   }).join('')+'</div>':'<div class="empty">Sin visitas</div>';
 
   const dowCnt=Array(7).fill(0);d.forEach(r=>{if(r.dow!=null)dowCnt[r.dow]++});
-  const pdvE=Object.entries(d.reduce((m,r)=>{if(r.pdv)m[r.pdv]=(m[r.pdv]||0)+1;return m},{})).sort((a,b)=>b[1]-a[1]).slice(0,7);
+  const p=porDia(d),pLbl=p.labels.map(k=>k.slice(5));
 
   cont.innerHTML=`
-  ${vHoy>0?`<div class="alert-banner ok"><svg><use href="#i-check"/></svg><div><b>${vHoy} visitas registradas hoy</b><span>Equipo activo en campo</span></div></div>`:''}
+  ${vHoy>0?`<div class="alert-banner ok"><svg><use href="#i-check"/></svg><div><b>${vHoy} visitas registradas hoy</b><span>Equipo activo en campo · ${ult7} visitas últimos 7 días</span></div></div>`:''}
   <div class="kpis">
     ${kpi('ic-blue','i-map',fN(d.length),'Visitas totales',pdvs+' PDV · '+cius+' ciudades')}
     ${kpi('ic-cyan','i-store',fN(pdvs),'PDV únicos','')}
@@ -755,20 +872,35 @@ function vVisitas(cont,d){
     ${kpi('ic-purple','i-pin',Math.round(conGPS/Math.max(1,d.length)*100)+'%','Con GPS',conGPS+' de '+d.length)}
     ${kpi('ic-pink','i-img',Math.round(conFotos/Math.max(1,d.length)*100)+'%','Con fotos',conFotos+' visitas')}
   </div>
+  <div class="hl-grid">
+    ${topPdv?hl('gold','i-store','PDV más visitado',topPdv.nombre,`<b>${topPdv.n}</b> visitas · ${esc(topPdv.ciudad||'—')}`):''}
+    ${topMerc?hl('green','i-users','Mercaderista #1',topMerc.nombre,`<b>${topMerc.n}</b> gestiones · ${topMerc.vts} ventas`):''}
+    ${hl('teal','i-clock','Visitas últimos 7 días',ult7+' visitas',(ult7/Math.max(1,d.length)*100).toFixed(0)+'% del periodo','','tendencia reciente')}
+  </div>
   <div class="grid g-23">
-    ${card('<svg><use href="#i-grid"/></svg>Mapa de calor · hora × día','Hora pico de visitas',hmHtml)}
+    ${card('<svg><use href="#i-trend"/></svg>Tendencia de visitas','Diaria + línea de tendencia','<div class="h240"><canvas id="chVisT"></canvas></div>')}
     ${card('<svg><use href="#i-clock"/></svg>Últimas visitas','Entrada → salida',tlHtml)}
   </div>
-  <div class="grid g-3">
-    ${card('<svg><use href="#i-bar"/></svg>Día de semana','','<div class="h220"><canvas id="chDow"></canvas></div>')}
-    ${card('<svg><use href="#i-trend"/></svg>Distribución horaria','','<div class="h220"><canvas id="chHV"></canvas></div>')}
-    ${card('<svg><use href="#i-store"/></svg>Top PDV','Más visitados','<div class="tl">'+pdvE.map(([k,v],i)=>`<div class="tr2"><div class="rk${i<3?' g'+(i+1):''}">${i+1}</div><div class="nm">${esc(k)}</div><div class="vl">${v}</div></div>`).join('')+'</div>')}
+  <div class="grid g-2">
+    ${card('<svg><use href="#i-grid"/></svg>Mapa de calor · hora × día','Hora pico',hmHtml)}
+    <div style="display:flex;flex-direction:column;gap:12px">
+      ${card('<svg><use href="#i-bar"/></svg>Día de semana','','<div class="h140"><canvas id="chDow"></canvas></div>')}
+      ${card('<svg><use href="#i-trend"/></svg>Distribución horaria','','<div class="h140"><canvas id="chHV"></canvas></div>')}
+    </div>
   </div>`;
 
+  // Tendencia con línea de regresión
+  const ctxVT=document.getElementById('chVisT').getContext('2d');
+  CH.visT=new Chart(ctxVT,{data:{labels:pLbl,datasets:[
+    {type:'line',label:'Visitas',data:p.gest,borderColor:'#1d4ed8',backgroundColor:grad(ctxVT,'rgba(29,78,216,.32)','rgba(29,78,216,0)'),fill:true,tension:.35,pointRadius:3,borderWidth:2.5,pointBackgroundColor:'#1d4ed8'},
+    {type:'line',label:'Tendencia',data:reg(p.gest),borderColor:'#06b6d4',borderDash:[6,5],pointRadius:0,tension:0,borderWidth:2,fill:false}
+  ]},options:baseOpts({y:{beginAtZero:true,grid:{color:'#f1f5f9'}}})});
+
   const clrs=['#dc2626','#16a34a','#0ea5e9','#f97316','#7c3aed','#0d9488','#db2777'];
-  CH.dow=new Chart(document.getElementById('chDow'),{type:'bar',data:{labels:dias,datasets:[{label:'Visitas',data:dowCnt,backgroundColor:dias.map((_,i)=>clrs[i]),borderRadius:7}]},options:baseOpts({y:{beginAtZero:true,grid:{color:'#f1f5f9'}}},true)});
+  CH.dow=new Chart(document.getElementById('chDow'),{type:'bar',data:{labels:dias,datasets:[{label:'Visitas',data:dowCnt,backgroundColor:dias.map((_,i)=>clrs[i]),borderRadius:6}]},options:baseOpts({y:{beginAtZero:true,grid:{color:'#f1f5f9'}}},true)});
   const horas=Array(24).fill(0);d.forEach(r=>{if(r.hora!=null)horas[r.hora]++});
-  CH.hv=new Chart(document.getElementById('chHV'),{type:'line',data:{labels:Array.from({length:24},(_,i)=>i+'h'),datasets:[{label:'Visitas',data:horas,borderColor:'#1d4ed8',backgroundColor:'rgba(29,78,216,.12)',fill:true,tension:.4,pointRadius:2,borderWidth:2}]},options:baseOpts({y:{beginAtZero:true,grid:{color:'#f1f5f9'}}},true)});
+  const ctxHV=document.getElementById('chHV').getContext('2d');
+  CH.hv=new Chart(ctxHV,{type:'line',data:{labels:Array.from({length:24},(_,i)=>i+'h'),datasets:[{label:'Visitas',data:horas,borderColor:'#1d4ed8',backgroundColor:grad(ctxHV,'rgba(29,78,216,.28)','rgba(29,78,216,0)',140),fill:true,tension:.4,pointRadius:1.5,borderWidth:2}]},options:baseOpts({y:{beginAtZero:true,grid:{color:'#f1f5f9'}}},true)});
 }
 
 // ═══════════ 2. RESUMEN ═══════════
@@ -782,6 +914,10 @@ function vResumen(cont,d){
   const agot=d.reduce((s,r)=>s+(r.agotados||[]).length,0);
   const fc=d.reduce((s,r)=>s+(r.fechasCortas||[]).length,0);
   const muestras=d.reduce((s,r)=>s+r.numMuestras,0);
+  const tProd=topProducto(d,'ventaProductos',false);
+  const tCat=topCategoria(d);
+  const tPdvV=topPDV(d,true);
+  const mxV=mayorVenta(d);
 
   const p=porDia(d),lbl=p.labels.map(k=>k.slice(5));
   const ciu={};d.forEach(r=>{const k=r.ciudad||'—';ciu[k]=(ciu[k]||0)+r.totalPedido});
@@ -794,10 +930,16 @@ function vResumen(cont,d){
     ${kpi('ic-green','i-check',fN(vts),'Ventas',conv+'% conversión',{cls:conv>=50?'up':'down',txt:conv+'%'})}
     ${kpi('ic-cyan','i-dollar',fmtK(tVenta),'Valor ventas','calculado vs SKU')}
     ${kpi('ic-purple','i-cart',fmtK(tPed),'Sugerido','ticket '+fmtK(ticket))}
-    ${kpi('ic-orange','i-xc',fN(agot),'Agotados',agot>5?'⚠':'')}
-    ${kpi('ic-pink','i-clock',fN(fc),'Fechas cortas',fc>0?'⏰':'')}
+    ${kpi('ic-orange','i-xc',fN(agot),'Agotados',agot>5?'⚠ revisar':'')}
+    ${kpi('ic-pink','i-clock',fN(fc),'Fechas cortas',fc>0?'⏰ ver detalle':'')}
     ${kpi('ic-amber','i-pkg',fN(muestras),'Muestras','entregadas')}
     ${kpi('ic-teal','i-tag',fN(d.filter(r=>r.numPOPEntregado>0).length),'PDV con POP','')}
+  </div>
+  <div class="hl-grid">
+    ${tProd?hl('gold','i-pkg','Producto más vendido',tProd.nombre,`<b>${fN(tProd.u)}</b> unidades · <b>${fmt(tProd.v)}</b>`):''}
+    ${tCat?hl('green','i-tag','Categoría top',tCat.nombre,`<b>${fmt(tCat.v)}</b> en ventas · ${fN(tCat.u)} unidades`):''}
+    ${tPdvV?hl('teal','i-store','PDV con más ventas',tPdvV.nombre,`<b>${fmt(tPdvV.v)}</b> · ${tPdvV.n} gestiones`,esc(tPdvV.ciudad||'—'),''):''}
+    ${mxV?hl('pink','i-dollar','Mayor venta registrada',fmt(mxV.valorVenta),`${esc(mxV.nombre||'—')} · ${esc(mxV.pdv||'—')}`,esc(mxV.ciudad||'—'),mxV.fecha?mxV.fecha.toLocaleDateString('es-CO',{day:'2-digit',month:'short'}):''):''}
   </div>
   <div class="grid g-23">
     ${card('<svg><use href="#i-trend"/></svg>Tendencia general','Gestiones · Ventas · Sugerido','<div class="h240"><canvas id="chT"></canvas></div>')}
@@ -811,14 +953,16 @@ function vResumen(cont,d){
     ${card('<svg><use href="#i-pkg"/></svg>Top productos sugeridos','',`<div class="scroll-y">${topList(d,'pedidoProductos',false)}</div>`)}
   </div>`;
 
-  CH.t=new Chart(document.getElementById('chT'),{data:{labels:lbl,datasets:[
-    {type:'line',label:'Gestiones',data:p.gest,borderColor:'#1d4ed8',backgroundColor:'rgba(29,78,216,.1)',fill:true,tension:.35,pointRadius:2,borderWidth:2,yAxisID:'y'},
-    {type:'line',label:'Con venta',data:p.vts,borderColor:'#16a34a',backgroundColor:'transparent',tension:.35,pointRadius:2,borderWidth:2,yAxisID:'y'},
-    {type:'bar',label:'Sugerido $',data:p.val,backgroundColor:'rgba(124,58,237,.3)',borderRadius:5,yAxisID:'y1'}
+  const ctxT=document.getElementById('chT').getContext('2d');
+  CH.t=new Chart(ctxT,{data:{labels:lbl,datasets:[
+    {type:'line',label:'Gestiones',data:p.gest,borderColor:'#1d4ed8',backgroundColor:grad(ctxT,'rgba(29,78,216,.3)','rgba(29,78,216,0)',240),fill:true,tension:.35,pointRadius:2.5,borderWidth:2.5,yAxisID:'y'},
+    {type:'line',label:'Con venta',data:p.vts,borderColor:'#16a34a',backgroundColor:'transparent',tension:.35,pointRadius:2.5,borderWidth:2.5,yAxisID:'y'},
+    {type:'line',label:'Tendencia',data:reg(p.gest),borderColor:'#06b6d4',borderDash:[6,5],pointRadius:0,tension:0,borderWidth:2,fill:false,yAxisID:'y'},
+    {type:'bar',label:'Sugerido $',data:p.val,backgroundColor:'rgba(124,58,237,.28)',borderRadius:5,yAxisID:'y1'}
   ]},options:baseOpts({y:{beginAtZero:true,grid:{color:'#f1f5f9'}},y1:{position:'right',beginAtZero:true,grid:{drawOnChartArea:false},ticks:{callback:v=>'$'+(v/1000).toFixed(0)+'k',font:{size:10}}}})});
-  CH.c=new Chart(document.getElementById('chC'),{type:'doughnut',data:{labels:['Con venta','Sin venta'],datasets:[{data:[vts,d.length-vts],backgroundColor:['#16a34a','#e2e8f0'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'72%',plugins:{legend:{position:'bottom',labels:{font:{family:'Inter',size:10},usePointStyle:true,boxWidth:6,padding:8}}}}});
-  CH.p=new Chart(document.getElementById('chP'),{type:'doughnut',data:{labels:['Completo','Sin','Parcial'],datasets:[{data:[pop.Si,pop.No,pop.Parcial],backgroundColor:['#0d9488','#dc2626','#f97316'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{position:'bottom',labels:{font:{family:'Inter',size:10},usePointStyle:true,boxWidth:6,padding:8}}}}});
-  CH.ciu=new Chart(document.getElementById('chCiu'),{type:'bar',data:{labels:ciuE.map(x=>x[0]),datasets:[{label:'Sugerido $',data:ciuE.map(x=>x[1]),backgroundColor:ciuE.map((_,i)=>COLORES[i]||'#1d4ed8'),borderRadius:7}]},options:baseOpts({y:{beginAtZero:true,grid:{color:'#f1f5f9'},ticks:{callback:v=>'$'+(v/1000).toFixed(0)+'k',font:{size:10}}}},true)});
+  CH.c=new Chart(document.getElementById('chC'),{type:'doughnut',data:{labels:['Con venta','Sin venta'],datasets:[{data:[vts,d.length-vts],backgroundColor:['#16a34a','#e2e8f0'],borderWidth:0,hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,cutout:'72%',plugins:{legend:{position:'bottom',labels:{font:{family:'Inter',size:10},usePointStyle:true,boxWidth:6,padding:8}}}}});
+  CH.p=new Chart(document.getElementById('chP'),{type:'doughnut',data:{labels:['Completo','Sin','Parcial'],datasets:[{data:[pop.Si,pop.No,pop.Parcial],backgroundColor:['#0d9488','#dc2626','#f97316'],borderWidth:0,hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{position:'bottom',labels:{font:{family:'Inter',size:10},usePointStyle:true,boxWidth:6,padding:8}}}}});
+  CH.ciu=new Chart(document.getElementById('chCiu'),{type:'bar',data:{labels:ciuE.map(x=>x[0]),datasets:[{label:'Sugerido $',data:ciuE.map(x=>x[1]),backgroundColor:ciuE.map((_,i)=>COLORES[i]||'#1d4ed8'),borderRadius:7,hoverBackgroundColor:'#1d4ed8'}]},options:baseOpts({y:{beginAtZero:true,grid:{color:'#f1f5f9'},ticks:{callback:v=>'$'+(v/1000).toFixed(0)+'k',font:{size:10}}}},true)});
 }
 
 // ═══════════ 3. EQUIPO ═══════════
@@ -887,7 +1031,7 @@ function vVentas(cont,d){
   const p=porDia(d),lbl=p.labels.map(k=>k.slice(5));
   const motivos={};d.forEach(r=>{if(r.motivoNoVenta)motivos[r.motivoNoVenta]=(motivos[r.motivoNoVenta]||0)+1});
   const motE=Object.entries(motivos).sort((a,b)=>b[1]-a[1]);
-  const ciuMap={};d.forEach(r=>{const k=r.ciudad||'—';if(!ciuMap[k])ciuMap[k]={t:0,v:0};ciuMap[k].t++;if(r.tieneVenta)ciuMap[k].v++});
+  const ciuMap={};d.forEach(r=>{const k=r.ciudad||'—';if(!ciuMap[k])ciuMap[k]={t:0,v:0,val:0};ciuMap[k].t++;ciuMap[k].val+=r.valorVenta;if(r.tieneVenta)ciuMap[k].v++});
   const ciuE=Object.entries(ciuMap).sort((a,b)=>b[1].v/b[1].t-a[1].v/a[1].t).slice(0,7);
 
   const mp={};
@@ -898,6 +1042,22 @@ function vVentas(cont,d){
   const mpE=Object.entries(mp).sort((a,b)=>b[1].v-a[1].v).slice(0,12);
   const topRows=mpE.length?mpE.map(([k,v])=>`<tr><td><b>${esc(k)}</b></td><td class="r">${fN(v.u)}</td><td class="r">${fmt(v.v/v.u||0)}</td><td class="r"><b>${fmt(v.v)}</b></td></tr>`).join(''):'<tr><td colspan="4" class="empty">Sin ventas</td></tr>';
 
+  // Categorías
+  const catMap={};
+  d.forEach(r=>(r.ventaProductos||[]).forEach(pr=>{
+    const ref=SKU_MAP[pr.sku];const cat=ref?ref.categoria:(pr.categoria||'Sin categoría');
+    const c=num(pr.cantidad)||0;
+    if(!catMap[cat])catMap[cat]={u:0,v:0};
+    catMap[cat].u+=c;catMap[cat].v+=c*(ref?ref.precio:0);
+  }));
+  const catE=Object.entries(catMap).sort((a,b)=>b[1].v-a[1].v).slice(0,8);
+
+  const tProd=topProducto(d,'ventaProductos',false);
+  const tCat=topCategoria(d);
+  const tPdvV=topPDV(d,true);
+  const mxV=mayorVenta(d);
+  const tMerc=topMercaderista(d,true);
+
   cont.innerHTML=`
   <div class="kpis">
     ${kpi('ic-blue','i-grid',fN(d.length),'Gestiones','')}
@@ -907,21 +1067,38 @@ function vVentas(cont,d){
     ${kpi('ic-purple','i-trend',fmtK(tickV),'Ticket promedio','')}
     ${kpi('ic-orange','i-pkg',fN(undV),'Unidades','vendidas')}
   </div>
+  <div class="hl-grid">
+    ${tProd?hl('gold','i-pkg','Producto top',tProd.nombre,`<b>${fN(tProd.u)}</b> unidades · <b>${fmt(tProd.v)}</b>`):''}
+    ${tCat?hl('green','i-tag','Categoría líder',tCat.nombre,`<b>${fmt(tCat.v)}</b> · ${fN(tCat.u)} und`):''}
+    ${tPdvV?hl('teal','i-store','PDV con más ventas',tPdvV.nombre,`<b>${fmt(tPdvV.v)}</b> en ${tPdvV.n} gestiones`,esc(tPdvV.ciudad||'—'),''):''}
+    ${mxV?hl('pink','i-dollar','Mayor venta',fmt(mxV.valorVenta),`${esc(mxV.pdv||'—')} · ${esc(mxV.nombre||'—').split(' ').slice(0,2).join(' ')}`,esc(mxV.ciudad||'—'),mxV.fecha?mxV.fecha.toLocaleDateString('es-CO',{day:'2-digit',month:'short'}):''):''}
+    ${tMerc?hl('gold','i-users','Top mercaderista',tMerc.nombre,`<b>${tMerc.vts}</b> ventas · <b>${fmt(tMerc.v)}</b>`):''}
+  </div>
   <div class="grid g-23">
-    ${card('<svg><use href="#i-trend"/></svg>Tendencia ventas','Diaria · conversión','<div class="h240"><canvas id="chVT"></canvas></div>')}
+    ${card('<svg><use href="#i-trend"/></svg>Tendencia ventas + conversión','Diaria con línea de tendencia','<div class="h240"><canvas id="chVT"></canvas></div>')}
     ${card('<svg><use href="#i-xc"/></svg>Motivos sin venta','',motE.length?'<div class="tl">'+motE.map(([k,v],i)=>`<div class="tr2"><div class="rk${i<3?' g'+(i+1):''}">${i+1}</div><div class="nm">${esc(k)}</div><div class="vl">${v}</div></div>`).join('')+'</div>':'<div class="empty">Sin registros</div>')}
   </div>
   <div class="grid g-2">
     ${card('<svg><use href="#i-pkg"/></svg>Top productos vendidos · con valor','vs precio SKU','<div class="tw"><table><thead><tr><th>Producto</th><th class="r">Unid</th><th class="r">$ u</th><th class="r">$ total</th></tr></thead><tbody>'+topRows+'</tbody></table></div>')}
+    ${card('<svg><use href="#i-tag"/></svg>Ventas por categoría','Valor monetizado','<div class="h240"><canvas id="chCat"></canvas></div>')}
+  </div>
+  <div class="grid g-2">
     ${card('<svg><use href="#i-bar"/></svg>Conversión por ciudad','','<div class="h240"><canvas id="chCC"></canvas></div>')}
+    ${card('<svg><use href="#i-dollar"/></svg>Valor de venta por ciudad','','<div class="h240"><canvas id="chCV"></canvas></div>')}
   </div>`;
 
+  const conV=p.labels.map(k=>d.filter(r=>r.tieneVenta&&r.fecha&&r.fecha.toISOString().slice(0,10)===k).length);
+  const sinV=p.labels.map(k=>d.filter(r=>!r.tieneVenta&&r.fecha&&r.fecha.toISOString().slice(0,10)===k).length);
+  const convPct=p.labels.map(k=>{const tot=d.filter(r=>r.fecha&&r.fecha.toISOString().slice(0,10)===k).length;const vv=d.filter(r=>r.tieneVenta&&r.fecha&&r.fecha.toISOString().slice(0,10)===k).length;return tot?Math.round(vv/tot*100):0});
   CH.vt=new Chart(document.getElementById('chVT'),{data:{labels:lbl,datasets:[
-    {type:'bar',label:'Con venta',data:p.labels.map(k=>d.filter(r=>r.tieneVenta&&r.fecha&&r.fecha.toISOString().slice(0,10)===k).length),backgroundColor:'rgba(22,163,74,.75)',borderRadius:5,yAxisID:'y'},
-    {type:'bar',label:'Sin venta',data:p.labels.map(k=>d.filter(r=>!r.tieneVenta&&r.fecha&&r.fecha.toISOString().slice(0,10)===k).length),backgroundColor:'rgba(220,38,38,.5)',borderRadius:5,yAxisID:'y'},
-    {type:'line',label:'Conv %',data:p.labels.map(k=>{const tot=d.filter(r=>r.fecha&&r.fecha.toISOString().slice(0,10)===k).length;const vv=d.filter(r=>r.tieneVenta&&r.fecha&&r.fecha.toISOString().slice(0,10)===k).length;return tot?Math.round(vv/tot*100):0}),borderColor:'#7c3aed',borderWidth:2,pointRadius:2,tension:.3,yAxisID:'y1'}
+    {type:'bar',label:'Con venta',data:conV,backgroundColor:'rgba(22,163,74,.8)',borderRadius:5,yAxisID:'y',hoverBackgroundColor:'#16a34a'},
+    {type:'bar',label:'Sin venta',data:sinV,backgroundColor:'rgba(220,38,38,.55)',borderRadius:5,yAxisID:'y',hoverBackgroundColor:'#dc2626'},
+    {type:'line',label:'Conv %',data:convPct,borderColor:'#7c3aed',borderWidth:2.5,pointRadius:2.5,tension:.3,yAxisID:'y1',pointBackgroundColor:'#7c3aed'},
+    {type:'line',label:'Tendencia conv.',data:reg(convPct),borderColor:'#f59e0b',borderDash:[5,4],borderWidth:1.8,pointRadius:0,tension:0,yAxisID:'y1',fill:false}
   ]},options:baseOpts({y:{beginAtZero:true,stacked:true,grid:{color:'#f1f5f9'}},y1:{position:'right',min:0,max:100,ticks:{callback:v=>v+'%',font:{size:10}},grid:{drawOnChartArea:false}}})});
-  CH.cc=new Chart(document.getElementById('chCC'),{type:'bar',data:{labels:ciuE.map(([k])=>k),datasets:[{label:'% Conversión',data:ciuE.map(([,v])=>Math.round(v.v/v.t*100)),backgroundColor:'rgba(13,148,136,.8)',borderRadius:7}]},options:baseOpts({y:{beginAtZero:true,max:100,ticks:{callback:v=>v+'%',font:{size:10}},grid:{color:'#f1f5f9'}}},true)});
+  CH.cat=new Chart(document.getElementById('chCat'),{type:'bar',data:{labels:catE.map(([k])=>k.length>16?k.slice(0,14)+'…':k),datasets:[{label:'Valor ventas',data:catE.map(([,v])=>v.v),backgroundColor:catE.map((_,i)=>COLORES[i]||'#1d4ed8'),borderRadius:7,hoverBackgroundColor:'#1d4ed8'}]},options:baseOpts({y:{beginAtZero:true,grid:{color:'#f1f5f9'},ticks:{callback:v=>'$'+(v/1000).toFixed(0)+'k',font:{size:10}}}},true)});
+  CH.cc=new Chart(document.getElementById('chCC'),{type:'bar',data:{labels:ciuE.map(([k])=>k),datasets:[{label:'% Conversión',data:ciuE.map(([,v])=>Math.round(v.v/v.t*100)),backgroundColor:'rgba(13,148,136,.85)',borderRadius:7,hoverBackgroundColor:'#0d9488'}]},options:baseOpts({y:{beginAtZero:true,max:100,ticks:{callback:v=>v+'%',font:{size:10}},grid:{color:'#f1f5f9'}}},true)});
+  CH.cv=new Chart(document.getElementById('chCV'),{type:'bar',data:{labels:ciuE.map(([k])=>k),datasets:[{label:'Ventas $',data:ciuE.map(([,v])=>v.val),backgroundColor:'rgba(29,78,216,.8)',borderRadius:7,hoverBackgroundColor:'#1d4ed8'}]},options:baseOpts({y:{beginAtZero:true,grid:{color:'#f1f5f9'},ticks:{callback:v=>'$'+(v/1000).toFixed(0)+'k',font:{size:10}}}},true)});
 }
 
 // ═══════════ 5. SUGERIDO ═══════════
@@ -933,6 +1110,35 @@ function vSugerido(cont,d){
   const promos=cp.filter(r=>r.pedidoPromos).length;
   const pm={};cp.forEach(r=>{const k=r.nombre||'—';if(!pm[k])pm[k]={n:0,v:0};pm[k].n++;pm[k].v+=r.totalPedido});
   const pmE=Object.entries(pm).sort((a,b)=>b[1].v-a[1].v);
+
+  // Tendencia por día (solo de pedidos con valor)
+  const pDay={};
+  cp.forEach(r=>{if(!r.fecha)return;const k=r.fecha.toISOString().slice(0,10);if(!pDay[k])pDay[k]={n:0,v:0};pDay[k].n++;pDay[k].v+=r.totalPedido});
+  const pKeys=Object.keys(pDay).sort();
+  const pLbl=pKeys.map(k=>k.slice(5));
+  const pVals=pKeys.map(k=>pDay[k].v);
+  const pCnt=pKeys.map(k=>pDay[k].n);
+
+  // Top categorías
+  const catMap={};
+  cp.forEach(r=>(r.pedidoProductos||[]).forEach(p=>{
+    const cat=p.categoria||(SKU_MAP[p.sku]?SKU_MAP[p.sku].categoria:'Sin categoría');
+    const c=num(p.cantidad)||0;const pre=num(p.precio)||0;
+    if(!catMap[cat])catMap[cat]={u:0,v:0};
+    catMap[cat].u+=c;catMap[cat].v+=c*pre;
+  }));
+  const catE=Object.entries(catMap).sort((a,b)=>b[1].v-a[1].v).slice(0,7);
+
+  // PDV con más sugerido
+  const pdvMap={};
+  cp.forEach(r=>{if(!r.pdv)return;if(!pdvMap[r.pdv])pdvMap[r.pdv]={v:0,n:0,ciudad:r.ciudad};pdvMap[r.pdv].v+=r.totalPedido;pdvMap[r.pdv].n++});
+  const pdvE=Object.entries(pdvMap).sort((a,b)=>b[1].v-a[1].v).slice(0,8);
+
+  const tProd=topProducto(cp,'pedidoProductos',false);
+  const tPdv=topPDVSugerido(cp);
+  const mxS=mayorSugerido(cp);
+  const promedio=cp.length?total/cp.length:0;
+
   const rows=cp.slice(0,80).map(r=>`<tr>
     <td>${r.fecha?r.fecha.toLocaleDateString('es-CO',{day:'2-digit',month:'2-digit'}):'—'}</td>
     <td><b>${esc(r.nombre).split(' ').slice(0,2).join(' ')}</b></td>
@@ -947,15 +1153,38 @@ function vSugerido(cont,d){
     ${kpi('ic-cyan','i-dollar',fmtK(total),'Valor total','')}
     ${kpi('ic-green','i-box',fN(und),'Unidades','')}
     ${kpi('ic-purple','i-trend',fmtK(ticket),'Ticket promedio','')}
-    ${kpi('ic-orange','i-star',fN(promos),'Con promociones','')}
+    ${kpi('ic-orange','i-star',fN(promos),'Con promociones',Math.round(promos/Math.max(1,cp.length)*100)+'%')}
+    ${kpi('ic-teal','i-pkg',fN(catE.length),'Categorías','distintas')}
+  </div>
+  <div class="hl-grid">
+    ${tProd?hl('gold','i-pkg','Producto más sugerido',tProd.nombre,`<b>${fN(tProd.u)}</b> unidades · <b>${fmt(tProd.v)}</b>`):''}
+    ${tPdv?hl('teal','i-store','PDV con mayor sugerido',tPdv.nombre,`<b>${fmt(tPdv.v)}</b> · ${tPdv.n} pedidos`,esc(tPdv.ciudad||'—'),''):''}
+    ${mxS?hl('pink','i-dollar','Mayor sugerido registrado',fmt(mxS.totalPedido),`${esc(mxS.pdv||'—')} · ${esc(mxS.nombre||'—').split(' ').slice(0,2).join(' ')}`,esc(mxS.ciudad||'—'),mxS.fecha?mxS.fecha.toLocaleDateString('es-CO',{day:'2-digit',month:'short'}):''):''}
+    ${catE[0]?hl('green','i-tag','Categoría más sugerida',catE[0][0],`<b>${fmt(catE[0][1].v)}</b> · ${fN(catE[0][1].u)} und`):''}
+  </div>
+  <div class="grid g-23">
+    ${card('<svg><use href="#i-trend"/></svg>Tendencia sugerido','Valor diario · con tendencia','<div class="h240"><canvas id="chSugT"></canvas></div>')}
+    ${card('<svg><use href="#i-tag"/></svg>Top categorías sugeridas','Valor','<div class="h240"><canvas id="chSugCat"></canvas></div>')}
   </div>
   <div class="grid g-23">
     ${card('<svg><use href="#i-cart"/></svg>Sugeridos recientes',cp.length+' registros',`<div class="tw"><table><thead><tr><th>Fecha</th><th>Mercaderista</th><th>PDV</th><th class="r">Ítems</th><th class="r">Total</th></tr></thead><tbody>${rows||'<tr><td colspan="5" class="empty">Sin sugeridos</td></tr>'}</tbody></table></div>`)}
     <div style="display:flex;flex-direction:column;gap:12px">
-      ${card('<svg><use href="#i-pkg"/></svg>Top productos','',`<div class="scroll-y">${topList(cp,'pedidoProductos',false,7)}</div>`)}
+      ${card('<svg><use href="#i-store"/></svg>Top PDV en valor','','<div class="tl">'+pdvE.map(([k,v],i)=>`<div class="tr2"><div class="rk${i<3?' g'+(i+1):''}">${i+1}</div><div class="nm">${esc(k)}</div><div class="vl">${fmtK(v.v)}</div></div>`).join('')+'</div>')}
       ${card('<svg><use href="#i-users"/></svg>Por mercaderista','','<div class="tl">'+pmE.slice(0,6).map(([k,v],i)=>`<div class="tr2"><div class="rk${i<3?' g'+(i+1):''}">${i+1}</div><div class="nm">${esc(k.split(' ').slice(0,2).join(' '))}</div><div class="vl">${fmtK(v.v)}</div></div>`).join('')+'</div>')}
     </div>
   </div>`;
+
+  // Charts
+  const ctxST=document.getElementById('chSugT').getContext('2d');
+  CH.sugT=new Chart(ctxST,{data:{labels:pLbl,datasets:[
+    {type:'bar',label:'Valor sugerido',data:pVals,backgroundColor:'rgba(124,58,237,.78)',borderRadius:6,yAxisID:'y'},
+    {type:'line',label:'Tendencia',data:reg(pVals),borderColor:'#06b6d4',borderDash:[6,5],pointRadius:0,tension:0,borderWidth:2,fill:false,yAxisID:'y'},
+    {type:'line',label:'Pedidos',data:pCnt,borderColor:'#16a34a',backgroundColor:'transparent',tension:.35,pointRadius:2.5,borderWidth:2.5,yAxisID:'y1'}
+  ]},options:baseOpts({y:{beginAtZero:true,grid:{color:'#f1f5f9'},ticks:{callback:v=>'$'+(v/1000).toFixed(0)+'k',font:{size:10}}},y1:{position:'right',beginAtZero:true,grid:{drawOnChartArea:false},ticks:{font:{size:10}}}})});
+
+  const sugCatOpts=baseOpts({x:{beginAtZero:true,grid:{color:'#f1f5f9'},ticks:{callback:v=>'$'+(v/1000).toFixed(0)+'k',font:{size:10}}},y:{grid:{display:false},ticks:{font:{size:10}}}},true);
+  sugCatOpts.indexAxis='y';
+  CH.sugCat=new Chart(document.getElementById('chSugCat'),{type:'bar',data:{labels:catE.map(([k])=>k.length>16?k.slice(0,14)+'…':k),datasets:[{label:'Valor sugerido',data:catE.map(([,v])=>v.v),backgroundColor:catE.map((_,i)=>COLORES[i]||'#1d4ed8'),borderRadius:7,hoverBackgroundColor:'#1d4ed8'}]},options:sugCatOpts});
 }
 
 // ═══════════ 6. CHEK DE PRECIOS ═══════════
@@ -966,36 +1195,67 @@ function vChequeo(cont,d){
   const fuera=chL.length-ok;
   const pctOk=chL.length?Math.round(ok/chL.length*100):0;
 
-  const pdvMix={};
-  chL.forEach(c=>{const k=c.pdv||'—';if(!pdvMix[k])pdvMix[k]={pdv:k,nuestros:[],comp:[],ciudad:c.ciudad,merc:c.merc};pdvMix[k].nuestros.push({encontrado:num(c.precioEncontrado),referencia:num(c.precioReferencia)})});
-  compL.forEach(c=>{const k=c.pdv||'—';if(!pdvMix[k])pdvMix[k]={pdv:k,nuestros:[],comp:[],ciudad:c.ciudad,merc:c.merc};pdvMix[k].comp.push({valor:num(c.valor)})});
+  // Calculo desviación % por chequeo
+  const chConDiff=chL.map(c=>{
+    const ref=num(c.precioReferencia),en=num(c.precioEncontrado);
+    const diff=ref>0?((en-ref)/ref*100):0;
+    return {...c,diff:diff,ref:ref,en:en};
+  });
+  const mayorDif=chConDiff.slice().sort((a,b)=>Math.abs(b.diff)-Math.abs(a.diff))[0];
+  const promDif=chConDiff.length?chConDiff.reduce((s,c)=>s+c.diff,0)/chConDiff.length:0;
+  const promPropio=chConDiff.length?chConDiff.reduce((s,c)=>s+c.en,0)/chConDiff.length:0;
+  const promCompetencia=compL.length?compL.reduce((s,c)=>s+num(c.valor),0)/compL.length:0;
+  const gapVsComp=promCompetencia>0?Math.round((promPropio-promCompetencia)/promCompetencia*100):0;
+  const promosComp=compL.filter(c=>c.tipo==='2x1'||c.tipo==='Promoción').length;
 
-  const mixRows=Object.values(pdvMix).map(m=>{
+  // Distribución de diferencias % (histograma)
+  const bins=[{lbl:'<-15%',c:0,col:'#16a34a'},{lbl:'-15 a -5',c:0,col:'#65a30d'},{lbl:'-5 a 0',c:0,col:'#a3e635'},{lbl:'0 a 5',c:0,col:'#fde047'},{lbl:'5 a 15',c:0,col:'#f97316'},{lbl:'>15%',c:0,col:'#dc2626'}];
+  chConDiff.forEach(c=>{
+    const v=c.diff;
+    if(v<-15)bins[0].c++;else if(v<-5)bins[1].c++;else if(v<0)bins[2].c++;
+    else if(v<=5)bins[3].c++;else if(v<=15)bins[4].c++;else bins[5].c++;
+  });
+
+  // Top productos más caros vs competencia (positivo) y más baratos (negativo)
+  const skuMap={};
+  chConDiff.forEach(c=>{const k=c.sku||'—';if(!skuMap[k])skuMap[k]={diffs:[],pdvs:new Set()};skuMap[k].diffs.push(c.diff);if(c.pdv)skuMap[k].pdvs.add(c.pdv)});
+  const skuArr=Object.entries(skuMap).map(([k,v])=>({sku:k,prom:v.diffs.reduce((s,x)=>s+x,0)/v.diffs.length,n:v.diffs.length,pdvs:v.pdvs.size}));
+  const masCaros=skuArr.slice().filter(x=>x.prom>0).sort((a,b)=>b.prom-a.prom).slice(0,6);
+  const masBaratos=skuArr.slice().filter(x=>x.prom<0).sort((a,b)=>a.prom-b.prom).slice(0,6);
+
+  // Mix por PDV
+  const pdvMix={};
+  chL.forEach(c=>{const k=c.pdv||'—';if(!pdvMix[k])pdvMix[k]={pdv:k,nuestros:[],comp:[],ciudad:c.ciudad};pdvMix[k].nuestros.push({encontrado:num(c.precioEncontrado)})});
+  compL.forEach(c=>{const k=c.pdv||'—';if(!pdvMix[k])pdvMix[k]={pdv:k,nuestros:[],comp:[],ciudad:c.ciudad};pdvMix[k].comp.push({valor:num(c.valor)})});
+
+  const mixData=Object.values(pdvMix).map(m=>{
     const promN=m.nuestros.length?m.nuestros.reduce((s,x)=>s+x.encontrado,0)/m.nuestros.length:0;
     const promC=m.comp.length?m.comp.reduce((s,x)=>s+x.valor,0)/m.comp.length:0;
     const diff=promC>0&&promN>0?Math.round((promN-promC)/promC*100):null;
+    return {...m,promN,promC,diff};
+  });
+
+  const mixRows=mixData.map(m=>{
     let estado='',pillCls='info';
-    if(diff===null)estado='—';
-    else if(diff>5){estado='+'+diff+'%';pillCls='bad'}
-    else if(diff<-5){estado=diff+'%';pillCls='ok'}
+    if(m.diff===null)estado='—';
+    else if(m.diff>5){estado='+'+m.diff+'%';pillCls='bad'}
+    else if(m.diff<-5){estado=m.diff+'%';pillCls='ok'}
     else{estado='Competitivo';pillCls='ok'}
     return `<tr>
       <td><b>${esc(m.pdv)}</b><div style="font-size:9.5px;color:var(--muted)">${esc(m.ciudad||'—')}</div></td>
-      <td class="r">${m.nuestros.length?fmt(promN):'—'}<div style="font-size:9.5px;color:var(--muted)">${m.nuestros.length} ch</div></td>
-      <td class="r">${m.comp.length?fmt(promC):'—'}<div style="font-size:9.5px;color:var(--muted)">${m.comp.length} ch</div></td>
+      <td class="r">${m.nuestros.length?fmt(m.promN):'—'}<div style="font-size:9.5px;color:var(--muted)">${m.nuestros.length} ch</div></td>
+      <td class="r">${m.comp.length?fmt(m.promC):'—'}<div style="font-size:9.5px;color:var(--muted)">${m.comp.length} ch</div></td>
       <td class="r"><span class="pill ${pillCls}">${estado}</span></td>
     </tr>`;
   }).join('');
 
-  const rowsCh=chL.slice().sort((a,b)=>(b.fecha||0)-(a.fecha||0)).slice(0,40).map(c=>{
-    const ok=(c.dentroDelRango===true||c.dentroDelRango==='true');
-    const ref=num(c.precioReferencia),en=num(c.precioEncontrado);
-    const diff=ref>0?((en-ref)/ref*100).toFixed(1):'0';
+  const rowsCh=chConDiff.slice().sort((a,b)=>(b.fecha||0)-(a.fecha||0)).slice(0,40).map(c=>{
+    const isOk=(c.dentroDelRango===true||c.dentroDelRango==='true');
     return `<tr>
       <td><b>${esc(c.sku||'—')}</b></td>
-      <td class="r">${fmt(en)}</td>
-      <td class="r" style="color:${parseFloat(diff)>0?'#dc2626':parseFloat(diff)<0?'#16a34a':'#64748b'};font-weight:700">${parseFloat(diff)>0?'+':''}${diff}%</td>
-      <td>${ok?'<span class="pill ok">OK</span>':'<span class="pill bad">Fuera</span>'}</td>
+      <td class="r">${fmt(c.en)}</td>
+      <td class="r" style="color:${c.diff>0?'#dc2626':c.diff<0?'#16a34a':'#64748b'};font-weight:700">${c.diff>0?'+':''}${c.diff.toFixed(1)}%</td>
+      <td>${isOk?'<span class="pill ok">OK</span>':'<span class="pill bad">Fuera</span>'}</td>
       <td>${esc(c.pdv||'—')}</td>
     </tr>`;
   }).join('');
@@ -1008,12 +1268,26 @@ function vChequeo(cont,d){
   </tr>`).join('');
 
   cont.innerHTML=`
-  ${fuera>0?`<div class="alert-banner ${fuera>3?'bad':''}"><svg><use href="#i-alert"/></svg><div><b>${fuera} chequeos fuera del rango ±10%</b><span>Revisar precios en los PDV afectados</span></div></div>`:''}
+  ${fuera>0?`<div class="alert-banner ${fuera>3?'bad':''}"><svg><use href="#i-alert"/></svg><div><b>${fuera} chequeos fuera del rango ±10%</b><span>Revisar precios en los PDV afectados · ${mayorDif?'Mayor desvío: '+esc(mayorDif.sku)+' ('+(mayorDif.diff>0?'+':'')+mayorDif.diff.toFixed(1)+'%)':''}</span></div></div>`:''}
   <div class="kpis">
     ${kpi('ic-blue','i-tag',fN(chL.length),'Chequeos propios','')}
     ${kpi('ic-green','i-check',pctOk+'%','En rango ±10%',ok+' de '+chL.length,{cls:pctOk>=80?'up':'down',txt:pctOk+'%'})}
     ${kpi('ic-red','i-xc',fN(fuera),'Fuera de rango','')}
     ${kpi('ic-purple','i-cart',fN(compL.length),'Competencia','chequeos')}
+    ${kpi('ic-cyan','i-dollar',fmt(promPropio),'Precio prom. propio','')}
+    ${kpi('ic-orange','i-dollar',fmt(promCompetencia),'Precio prom. competencia',(gapVsComp>0?'+':'')+gapVsComp+'% vs ellos',{cls:gapVsComp>5?'down':gapVsComp<-5?'up':'neutral',txt:(gapVsComp>0?'+':'')+gapVsComp+'%'})}
+    ${kpi('ic-amber','i-star',fN(promosComp),'Competencia en promoción',Math.round(promosComp/Math.max(1,compL.length)*100)+'%')}
+    ${kpi('ic-pink','i-trend',(promDif>0?'+':'')+promDif.toFixed(1)+'%','Desviación promedio','vs precio ref')}
+  </div>
+  <div class="hl-grid">
+    ${mayorDif?hl('pink','i-alert','Mayor desviación detectada',esc(mayorDif.sku),`<b>${mayorDif.diff>0?'+':''}${mayorDif.diff.toFixed(1)}%</b> · ${fmt(mayorDif.en)} vs ref ${fmt(mayorDif.ref)}`,esc(mayorDif.pdv||'—'),''):''}
+    ${masCaros[0]?hl('gold','i-alert','Más caro vs competencia',esc(masCaros[0].sku),`<b>+${masCaros[0].prom.toFixed(1)}%</b> promedio · ${masCaros[0].n} chequeos`):''}
+    ${masBaratos[0]?hl('green','i-check','Más competitivo',esc(masBaratos[0].sku),`<b>${masBaratos[0].prom.toFixed(1)}%</b> promedio · ${masBaratos[0].n} chequeos`):''}
+    ${mixData.filter(m=>m.diff>5).length?hl('teal','i-store','PDV menos competitivos',mixData.filter(m=>m.diff>5).length+' PDV','con precios > 5% sobre competencia'):''}
+  </div>
+  <div class="grid g-23">
+    ${card('<svg><use href="#i-bar"/></svg>Distribución de desviaciones %','Diferencia vs precio referencia','<div class="h240"><canvas id="chDist"></canvas></div>')}
+    ${card('<svg><use href="#i-tag"/></svg>Productos más caros que la competencia','top 6',masCaros.length?'<div class="tl">'+masCaros.map((x,i)=>`<div class="tr2"><div class="rk${i<3?' g'+(i+1):''}">${i+1}</div><div class="nm">${esc(x.sku)}</div><div class="vl" style="color:#dc2626">+${x.prom.toFixed(1)}%</div></div>`).join('')+'</div>':'<div class="empty">Sin datos</div>')}
   </div>
   <div class="card">
     <div class="card-h"><h3><svg><use href="#i-tag"/></svg>Mix de precios · Propio vs Competencia por PDV</h3>
@@ -1026,6 +1300,8 @@ function vChequeo(cont,d){
     ${card('<svg><use href="#i-tag"/></svg>Detalle precios propios','con desviación %','<div class="tw"><table><thead><tr><th>Producto</th><th class="r">Encontrado</th><th class="r">Δ%</th><th>Estado</th><th>PDV</th></tr></thead><tbody>'+(rowsCh||'<tr><td colspan="5" class="empty">Sin chequeos</td></tr>')+'</tbody></table></div>')}
     ${card('<svg><use href="#i-cart"/></svg>Detalle competencia','','<div class="tw"><table><thead><tr><th>Producto</th><th class="r">Valor</th><th>Condición</th><th>PDV</th></tr></thead><tbody>'+(rowsComp||'<tr><td colspan="4" class="empty">Sin chequeos</td></tr>')+'</tbody></table></div>')}
   </div>`;
+
+  CH.dist=new Chart(document.getElementById('chDist'),{type:'bar',data:{labels:bins.map(b=>b.lbl),datasets:[{label:'Chequeos',data:bins.map(b=>b.c),backgroundColor:bins.map(b=>b.col),borderRadius:7,hoverBackgroundColor:'#0b1330'}]},options:baseOpts({y:{beginAtZero:true,grid:{color:'#f1f5f9'}}},true)});
 }
 
 // ═══════════ 7. INVENTARIO ═══════════
