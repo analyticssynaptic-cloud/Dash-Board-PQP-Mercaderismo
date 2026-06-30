@@ -526,18 +526,29 @@ function paso(n){
 }
 function volverEmail(){paso(1);document.getElementById('loginEmail').focus()}
 
+// Llama al endpoint y detecta si recibimos HTML en lugar de JSON
+async function callDash(url){
+  const r=await fetch(url,{redirect:'follow'});
+  const txt=await r.text();
+  const trim=txt.trim();
+  if(trim.startsWith('<')){
+    throw new Error('El backend devolvió HTML en vez de JSON. Esto significa que tu Apps Script NO está desplegado correctamente. Revisa: (1) Implementar → Gestionar implementaciones → Nueva versión con el código actualizado. (2) En "Quién tiene acceso" debe estar "Cualquier persona" (no "Cualquier persona con cuenta de Google"). (3) Ejecuta autorizarDashboard() una vez para autorizar permisos de Gmail.');
+  }
+  try{ return JSON.parse(trim); }
+  catch(e){ throw new Error('Respuesta inválida del backend: '+trim.slice(0,120)); }
+}
+
 async function solicitarCodigo(){
   const email=document.getElementById('loginEmail').value.trim().toLowerCase();
   if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){msg('Ingresa un correo válido.');return}
   const b=document.getElementById('btnEnviar');b.disabled=true;b.querySelector('span').textContent='Enviando código...';
   try{
-    const r=await fetch(DASH_URL+'?action=solicitarToken&email='+encodeURIComponent(email),{redirect:'follow'});
-    const d=await r.json();
+    const d=await callDash(DASH_URL+'?action=solicitarToken&email='+encodeURIComponent(email));
     if(!d.success){msg(d.error||'No se pudo enviar el código.');b.disabled=false;b.querySelector('span').textContent='Enviar código al correo';return}
     document.getElementById('lEmail').textContent=email;
     paso(2);
     setTimeout(()=>document.getElementById('loginToken').focus(),100);
-  }catch(e){msg('Sin conexión: '+e.message)}
+  }catch(e){msg(e.message)}
   b.disabled=false;b.querySelector('span').textContent='Enviar código al correo';
 }
 
@@ -547,14 +558,13 @@ async function validarCodigo(){
   if(!token||token.length<4){msg('Ingresa el código que llegó a tu correo.');return}
   const b=document.getElementById('btnEntrar');b.disabled=true;b.querySelector('span').textContent='Validando...';
   try{
-    const r=await fetch(DASH_URL+'?action=validarToken&email='+encodeURIComponent(email)+'&token='+encodeURIComponent(token),{redirect:'follow'});
-    const d=await r.json();
+    const d=await callDash(DASH_URL+'?action=validarToken&email='+encodeURIComponent(email)+'&token='+encodeURIComponent(token));
     if(!d.success){msg(d.error||'Código incorrecto.');b.disabled=false;b.querySelector('span').textContent='Ingresar a PQP Analytics';return}
     SESSION={session:d.session,email:d.email,exp:d.expira};
     localStorage.setItem(LS_SESSION,JSON.stringify(SESSION));
     msg('¡Bienvenido!',true);
     setTimeout(entrarShell,350);
-  }catch(e){msg('Sin conexión: '+e.message);b.disabled=false;b.querySelector('span').textContent='Ingresar a PQP Analytics'}
+  }catch(e){msg(e.message);b.disabled=false;b.querySelector('span').textContent='Ingresar a PQP Analytics'}
 }
 
 document.getElementById('loginToken').addEventListener('keypress',e=>{if(e.key==='Enter')validarCodigo()});
@@ -578,14 +588,13 @@ try{const raw=localStorage.getItem(LS_SESSION);if(raw){const s=JSON.parse(raw);i
 async function cargar(){
   set('<div class="state"><div class="spin"></div><h3>Cargando datos…</h3><p>Consultando la hoja Registros</p></div>');
   try{
-    const r=await fetch(DASH_URL+'?action=datos&session='+encodeURIComponent(SESSION?SESSION.session:''),{redirect:'follow'});
-    const d=await r.json();
+    const d=await callDash(DASH_URL+'?action=datos&session='+encodeURIComponent(SESSION?SESSION.session:''));
     if(d.reauth){logout();return}
     if(!d.success){set('<div class="state"><h3>Error al cargar</h3><p>'+(d.error||'')+'</p></div>');return}
     SKUS=d.skus||[];SKU_MAP={};SKUS.forEach(s=>{SKU_MAP[s.sku]={precio:s.precio||0,categoria:s.categoria||''}});
     TODOS=(d.registros||[]).map(norm);
     actualizarBadges();pintarFiltros();render();autoRefresh();
-  }catch(e){set('<div class="state"><h3>Sin conexión</h3><p>Verifica la URL del DashboardV2.gs · '+e.message+'</p></div>')}
+  }catch(e){set('<div class="state"><h3>Sin conexión</h3><p style="max-width:560px;margin:0 auto">'+e.message+'</p></div>')}
 }
 function autoRefresh(){
   clearInterval(rTimer);let m=rMins;
