@@ -2,7 +2,9 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+<meta name="theme-color" content="#1e3a8a">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <title>PQP Analytics · Synaptic</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,15 +25,23 @@
   --r:14px;--r-sm:10px;--r-lg:18px;
   --sb:218px;--tb:54px;
 }
-*{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased}
-html,body{height:100%}
-body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:var(--bg);font-size:13.5px;line-height:1.5;overflow:hidden}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+html{height:100%;text-size-adjust:100%;-webkit-text-size-adjust:100%}
+body{min-height:100%;font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:var(--bg);font-size:13.5px;line-height:1.5;overflow:hidden}
 h1,h2,h3,h4{font-family:'Plus Jakarta Sans',sans-serif;color:var(--ink);letter-spacing:-.01em}
 svg{pointer-events:none}a{color:var(--p2);text-decoration:none}
 ::-webkit-scrollbar{width:8px;height:8px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:#dbe3f0;border-radius:8px}
 ::-webkit-scrollbar-thumb:hover{background:#c0cbe0}
+
+/* Anti-FOUC: oculta hasta que las fuentes carguen para evitar el efecto "gigante" en el primer render */
+.app-loader{position:fixed;inset:0;z-index:999;background:var(--bg);display:flex;align-items:center;justify-content:center;transition:opacity .3s ease}
+.app-loader.hide{opacity:0;pointer-events:none}
+.app-loader-inner{text-align:center}
+.app-loader-inner .l-logo{width:52px;height:52px;border-radius:13px;background:linear-gradient(135deg,var(--p1),var(--p3));color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Plus Jakarta Sans';font-weight:800;font-size:22px;margin:0 auto 14px;box-shadow:0 12px 30px -10px rgba(29,78,216,.55)}
+.app-loader-inner .l-txt{font-family:'Plus Jakarta Sans';font-weight:700;font-size:12.5px;letter-spacing:3px;color:var(--ink);margin-bottom:14px}
+.app-loader-inner .l-spin{width:28px;height:28px;border:3px solid #dbeafe;border-top-color:var(--p2);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto}
 
 /* ═══════════════════════════════════════════════════════════ */
 /* LOGIN — Split screen pro                                    */
@@ -103,9 +113,14 @@ svg{pointer-events:none}a{color:var(--p2);text-decoration:none}
 /* ═══════════════════════════════════════════════════════════ */
 /* SHELL — más denso                                           */
 /* ═══════════════════════════════════════════════════════════ */
-.shell{display:none;height:100vh;overflow:hidden}
+.shell{display:none;height:100vh;height:100dvh;overflow:hidden}
 .shell.on{display:flex}
-.sidebar{width:var(--sb);flex-shrink:0;background:#fff;height:100vh;display:flex;flex-direction:column;border-right:1px solid var(--line);transition:.2s}
+.sidebar{width:var(--sb);flex-shrink:0;background:#fff;height:100vh;height:100dvh;display:flex;flex-direction:column;border-right:1px solid var(--line);transition:transform .25s ease,width .2s ease;z-index:50}
+.sb-backdrop{display:none;position:fixed;inset:0;background:rgba(11,19,48,.5);z-index:49;backdrop-filter:blur(2px);animation:fadeIn .2s ease}
+.sb-backdrop.on{display:block}
+.hamburger{display:none;width:36px;height:36px;border-radius:9px;border:1.5px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;align-items:center;justify-content:center;flex-shrink:0}
+.hamburger svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.hamburger:hover{border-color:var(--p2);color:var(--p2)}
 .sb-brand{padding:16px 16px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--line-2)}
 .sb-logo{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--p1),var(--p3));color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Plus Jakarta Sans';font-weight:800;font-size:15px;flex-shrink:0;box-shadow:0 4px 10px -3px rgba(29,78,216,.5)}
 .sb-brand b{font-family:'Plus Jakarta Sans';font-weight:800;font-size:12.5px;letter-spacing:2.5px;color:var(--ink);display:block;line-height:1}
@@ -133,7 +148,7 @@ svg{pointer-events:none}a{color:var(--p2);text-decoration:none}
 .pulse{width:6px;height:6px;border-radius:50%;background:#16a34a;animation:pulse 2s infinite}
 
 /* MAIN */
-.main{flex:1;min-width:0;display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.main{flex:1;min-width:0;display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden}
 .topbar{background:#fff;border-bottom:1px solid var(--line-2);padding:9px 22px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;flex-shrink:0;min-height:var(--tb)}
 .tb-title{flex:1;min-width:160px}
 .tb-title h2{font-family:'Plus Jakarta Sans';font-weight:800;font-size:16px;color:var(--ink);letter-spacing:-.01em;line-height:1.2}
@@ -275,33 +290,52 @@ tbody tr:hover{background:var(--surface-2)}
 .state p{color:var(--muted);font-size:12.5px}
 
 /* Galería ampliada */
-.gal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.gal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
 .gal-card{background:#fff;border:1px solid var(--line-2);border-radius:var(--r);overflow:hidden;transition:.18s;cursor:pointer;animation:slideUp .3s ease both}
 .gal-card:hover{transform:translateY(-2px);box-shadow:var(--sh-h);border-color:var(--line)}
-.gal-imgs{display:grid;grid-template-columns:1fr 1fr;gap:1.5px;background:var(--line-2)}
+.gal-group{padding:8px 10px 6px}
+.gal-group-title{font-family:'Plus Jakarta Sans';font-weight:800;font-size:10px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px;display:flex;align-items:center;gap:5px}
+.gal-group-title .gal-count{margin-left:auto;color:var(--p2);background:var(--line-3);padding:1px 6px;border-radius:20px;font-size:9px}
+.gal-imgs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;background:var(--line-2)}
 .gal-img{position:relative;aspect-ratio:1/1;overflow:hidden;background:var(--line-3)}
 .gal-img img{width:100%;height:100%;object-fit:cover;display:block;transition:.3s}
 .gal-card:hover .gal-img img{transform:scale(1.04)}
-.gal-img span{position:absolute;left:7px;top:7px;background:rgba(11,19,48,.85);color:#fff;font-family:'Plus Jakarta Sans';font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:2px 7px;border-radius:20px;backdrop-filter:blur(4px)}
-.gal-img .ph{display:flex;align-items:center;justify-content:center;color:var(--muted-2);font-size:11px;height:100%}
+.gal-img span{position:absolute;left:5px;top:5px;background:rgba(11,19,48,.85);color:#fff;font-family:'Plus Jakarta Sans';font-size:9px;font-weight:800;letter-spacing:.05em;padding:1px 6px;border-radius:12px;backdrop-filter:blur(4px)}
+.gal-img .ph{display:flex;align-items:center;justify-content:center;color:var(--muted-2);font-size:10px;height:100%;text-align:center;padding:6px}
+@media(max-width:520px){.gal-imgs{grid-template-columns:1fr 1fr 1fr}}
 .gal-info{padding:11px 13px}
 .gal-info b{font-family:'Plus Jakarta Sans';font-size:12.5px;display:block;color:var(--ink);font-weight:700}
 .gal-info .gal-sub{font-size:10.5px;color:var(--muted);margin-top:2px;display:flex;justify-content:space-between;gap:8px}
 .gal-info .gal-merc{font-size:10px;color:var(--muted);margin-top:7px;display:flex;align-items:center;gap:5px;padding-top:7px;border-top:1px dashed var(--line)}
 .gal-info .gal-merc svg{width:10px;height:10px;stroke:currentColor;fill:none;stroke-width:2}
 
-/* Lightbox */
-.lb{position:fixed;inset:0;background:rgba(11,19,48,.94);z-index:300;display:none;align-items:center;justify-content:center;padding:28px;backdrop-filter:blur(8px)}
+/* Lightbox pro: navegación entre 6 fotos */
+.lb{position:fixed;inset:0;background:rgba(11,19,48,.94);z-index:300;display:none;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(8px)}
 .lb.on{display:flex;animation:fadeIn .25s}
-.lb-box{max-width:1180px;width:100%;background:#fff;border-radius:18px;overflow:hidden;display:grid;grid-template-columns:1fr 1fr;gap:0;box-shadow:var(--sh-xl);max-height:92vh}
-.lb-pic{position:relative;background:#000;display:flex;align-items:center;justify-content:center;min-height:300px;max-height:92vh}
-.lb-pic img{max-width:100%;max-height:92vh;display:block;object-fit:contain}
-.lb-pic span{position:absolute;left:14px;top:14px;background:rgba(255,255,255,.95);color:var(--ink);font-family:'Plus Jakarta Sans';font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:20px}
-.lb-pic .lb-ph{color:var(--muted-2);padding:60px;text-align:center}
-.lb-close{position:absolute;top:14px;right:14px;width:36px;height:36px;border-radius:50%;background:rgba(11,19,48,.85);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:5;backdrop-filter:blur(6px)}
-.lb-close svg{width:16px;height:16px;stroke:#fff;fill:none;stroke-width:2.5}
+.lb-wrap{max-width:1180px;width:100%;height:100%;display:flex;flex-direction:column;gap:14px}
+.lb-head{display:flex;justify-content:space-between;align-items:center;color:#fff;padding:0 6px;gap:12px;flex-wrap:wrap}
+.lb-head-info{flex:1;min-width:0}
+.lb-head-info b{font-family:'Plus Jakarta Sans';font-weight:800;font-size:15px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lb-head-info span{font-size:12px;opacity:.7}
+.lb-pic-main{position:relative;flex:1;background:#000;border-radius:14px;overflow:hidden;display:flex;align-items:center;justify-content:center;min-height:0}
+.lb-pic-main img{max-width:100%;max-height:100%;display:block;object-fit:contain}
+.lb-pic-main .lb-lbl{position:absolute;left:12px;top:12px;background:rgba(255,255,255,.95);color:var(--ink);font-family:'Plus Jakarta Sans';font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:20px}
+.lb-pic-main .lb-ph{color:#94a3b8;padding:60px 20px;text-align:center;font-size:13px}
+.lb-nav{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);z-index:3;transition:.15s}
+.lb-nav:hover{background:rgba(0,0,0,.9);transform:translateY(-50%) scale(1.08)}
+.lb-nav.prev{left:12px}.lb-nav.next{right:12px}
+.lb-nav svg{width:20px;height:20px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.lb-thumbs{display:flex;gap:6px;overflow-x:auto;padding:4px 2px;scrollbar-width:thin}
+.lb-thumb{flex-shrink:0;width:64px;height:64px;border-radius:8px;overflow:hidden;cursor:pointer;border:2px solid transparent;background:#1e293b;position:relative;transition:.15s;padding:0}
+.lb-thumb.on{border-color:var(--ac)}
+.lb-thumb:hover{border-color:rgba(6,182,212,.6)}
+.lb-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.lb-thumb-tag{position:absolute;left:2px;bottom:2px;background:rgba(0,0,0,.85);color:#fff;font-family:'Plus Jakarta Sans';font-size:8.5px;font-weight:800;padding:1px 5px;border-radius:8px}
+.lb-thumb .ph{display:flex;align-items:center;justify-content:center;color:#64748b;font-size:9px;height:100%}
+.lb-close{position:absolute;top:12px;right:12px;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.15);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:20;backdrop-filter:blur(8px)}
+.lb-close svg{width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2.5}
 .lb-close:hover{background:var(--bad)}
-@media(max-width:760px){.lb-box{grid-template-columns:1fr;max-height:95vh;overflow-y:auto}.lb-pic{max-height:50vh}}
+@media(max-width:520px){.lb{padding:10px}.lb-nav{width:36px;height:36px}.lb-thumb{width:52px;height:52px}}
 
 /* Timeline */
 .tlw{display:flex;flex-direction:column;gap:0;max-height:360px;overflow-y:auto}
@@ -353,18 +387,74 @@ tbody tr:hover{background:var(--surface-2)}
   body{background:#fff;overflow:visible}
 }
 
-@media(max-width:1080px){.g-23,.g-32{grid-template-columns:1fr}.g-3{grid-template-columns:1fr 1fr}.g-22-1{grid-template-columns:1fr 1fr}}
-@media(max-width:820px){
-  .sidebar{width:56px}
+@media(max-width:1180px){.g-23,.g-32{grid-template-columns:1fr}.g-3{grid-template-columns:1fr 1fr}.g-22-1{grid-template-columns:1fr 1fr}}
+@media(max-width:960px){
+  /* Tablet: sidebar colapsada a íconos */
+  .sidebar{width:60px}
   .sb-brand span,.sbi span:not(svg),.sb-sep,.sb-user-i,.refresh-badge{display:none}
+  .sb-brand{padding:14px 12px;justify-content:center}
   .sbi{justify-content:center;padding:11px}
   .sb-user{justify-content:center;padding:7px}.sb-out{display:none}
-  .g-2{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}
+  .g-2{grid-template-columns:1fr}
+  .kpis{grid-template-columns:repeat(3,1fr)}
+  .hl-grid{grid-template-columns:repeat(2,1fr)}
+  .content{padding:12px 14px 30px}
+  .topbar{padding:8px 14px}
+  .tb-title h2{font-size:15px}
 }
-@media(max-width:520px){.kpis{grid-template-columns:1fr}.content{padding:12px;padding-bottom:36px}.topbar{padding:9px 14px}}
+@media(max-width:720px){
+  /* Mobile: sidebar como off-canvas (hamburguesa) */
+  .hamburger{display:inline-flex}
+  .sidebar{position:fixed;top:0;left:0;bottom:0;width:min(260px,80vw);transform:translateX(-100%);box-shadow:8px 0 32px -8px rgba(11,19,48,.25)}
+  .sidebar.open{transform:translateX(0)}
+  .sidebar .sb-brand{padding:16px 16px 14px;justify-content:flex-start}
+  .sb-brand span,.sbi span:not(svg),.sb-sep,.sb-user-i,.refresh-badge{display:block}
+  .sbi{justify-content:flex-start;padding:9px 12px}
+  .sb-user{justify-content:flex-start;padding:8px 10px}
+  .sb-out{display:flex}
+  .fil-bar{width:100%;order:2;overflow-x:auto;padding-bottom:2px}
+  .fil-bar::-webkit-scrollbar{height:4px}
+  .fil select,.fil input[type=date]{min-width:100px;font-size:12px}
+  .kpis{grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:10px}
+  .hl-grid{grid-template-columns:1fr;gap:8px}
+  .g-3{grid-template-columns:1fr}
+  .g-22-1{grid-template-columns:1fr}
+  .kpi-val{font-size:18px}
+  .kpi{padding:10px 12px}
+  .team-grid{grid-template-columns:1fr}
+  .card{padding:12px 14px}
+  .h280{height:240px}.h240{height:220px}.h220{height:200px}.h180{height:170px}
+  .lb-box{max-height:96vh}
+}
+@media(max-width:480px){
+  .kpis{grid-template-columns:1fr;gap:8px}
+  .content{padding:10px 12px 30px}
+  .topbar{padding:8px 10px;gap:9px}
+  .tb-title h2{font-size:14px}.tb-title span{font-size:10px}
+  .btn.pri span{display:none}
+  .btn.pri{padding:7px 9px;min-width:34px;justify-content:center}
+  .card-h h3{font-size:12.5px}
+  .gal-grid{grid-template-columns:1fr}
+  .kpi-val{font-size:17px}
+  .kpi-lbl{font-size:10.5px}
+  .fil select,.fil input[type=date]{min-width:90px;padding:5px 7px}
+  .h280,.h240,.h220{height:200px}.h180{height:160px}.h140{height:130px}
+  .alert-banner{padding:9px 11px;gap:9px}
+  .alert-banner b{font-size:12px}.alert-banner span{font-size:10.5px}
+  .tb-title span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+}
 </style>
 </head>
 <body>
+
+<!-- Loader anti-FOUC (evita el "gigante" del primer render) -->
+<div class="app-loader" id="appLoader">
+  <div class="app-loader-inner">
+    <div class="l-logo">S</div>
+    <div class="l-txt">PQP ANALYTICS</div>
+    <div class="l-spin"></div>
+  </div>
+</div>
 
 <svg style="display:none" xmlns="http://www.w3.org/2000/svg">
 <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></symbol>
@@ -464,8 +554,9 @@ tbody tr:hover{background:var(--surface-2)}
 </div>
 
 <!-- ═══════════════ SHELL ═══════════════ -->
+<div class="sb-backdrop" id="sbBackdrop" onclick="cerrarSidebar()"></div>
 <div class="shell" id="shell">
-  <nav class="sidebar">
+  <nav class="sidebar" id="sidebar">
     <div class="sb-brand">
       <div class="sb-logo">P</div>
       <div><b>PQP&nbsp;ANALYTICS</b><span>by Synaptic</span></div>
@@ -498,9 +589,12 @@ tbody tr:hover{background:var(--surface-2)}
 
   <div class="main">
     <div class="topbar">
+      <button class="hamburger" onclick="toggleSidebar()" aria-label="Menú">
+        <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
       <div class="tb-title" id="tbTitle"><h2>Visitas</h2><span id="tbSub">Cargando...</span></div>
       <div class="fil-bar" id="filtros"></div>
-      <button class="btn pri" onclick="cargar()"><svg><use href="#i-refresh"/></svg>Actualizar</button>
+      <button class="btn pri" onclick="cargar()"><svg><use href="#i-refresh"/></svg><span>Actualizar</span></button>
     </div>
     <div class="content" id="content">
       <div class="state"><div class="spin"></div><h3>Cargando datos…</h3><p>Consultando la hoja Registros</p></div>
@@ -508,12 +602,18 @@ tbody tr:hover{background:var(--surface-2)}
   </div>
 </div>
 
-<!-- LIGHTBOX -->
+<!-- LIGHTBOX pro -->
 <div class="lb" id="lb" onclick="cerrarLB(event)">
-  <div class="lb-box" onclick="event.stopPropagation()">
-    <div class="lb-pic" id="lbPic1"></div>
-    <div class="lb-pic" id="lbPic2"></div>
-    <button class="lb-close" onclick="cerrarLB()"><svg><use href="#i-x"/></svg></button>
+  <div class="lb-wrap" onclick="event.stopPropagation()">
+    <div class="lb-head">
+      <div class="lb-head-info"><b id="lbTitle">—</b><span id="lbSub">—</span></div>
+      <button class="lb-close" onclick="cerrarLB()"><svg><use href="#i-x"/></svg></button>
+    </div>
+    <div class="lb-pic-main" id="lbPicMain">
+      <button class="lb-nav prev" onclick="lbNav(-1)"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <button class="lb-nav next" onclick="lbNav(1)"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
+    </div>
+    <div class="lb-thumbs" id="lbThumbs"></div>
   </div>
 </div>
 
@@ -686,6 +786,33 @@ function entrarShell(){
   cargar();
 }
 function logout(){SESSION=null;localStorage.removeItem(LS_SESSION);location.reload()}
+
+// ═══════════ MOBILE UI ═══════════
+function toggleSidebar(){
+  const sb=document.getElementById('sidebar'),bd=document.getElementById('sbBackdrop');
+  const open=sb.classList.toggle('open');bd.classList.toggle('on',open);
+  document.body.style.overflow=open?'hidden':'';
+}
+function cerrarSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sbBackdrop').classList.remove('on');
+}
+// Cierra la sidebar en móvil al elegir una vista
+document.addEventListener('click',e=>{
+  const it=e.target.closest('.sbi');
+  if(it&&window.innerWidth<=720)cerrarSidebar();
+});
+
+// ═══════════ DISMISS LOADER (anti-FOUC) ═══════════
+function ocultarLoader(){
+  const l=document.getElementById('appLoader');
+  if(!l||l.classList.contains('hide'))return;
+  l.classList.add('hide');
+  setTimeout(()=>{l.style.display='none'},400);
+}
+// Esperamos a que carguen fuentes + un frame para que el CSS esté aplicado
+if(document.fonts&&document.fonts.ready){document.fonts.ready.then(()=>requestAnimationFrame(ocultarLoader))}
+window.addEventListener('load',()=>setTimeout(ocultarLoader,300));
 
 try{const raw=localStorage.getItem(LS_SESSION);if(raw){const s=JSON.parse(raw);if(s&&s.session&&new Date(s.exp).getTime()>Date.now()){SESSION=s;entrarShell()}}}catch(e){}
 
@@ -1446,16 +1573,42 @@ function vMuestrasPop(cont,d){
 
 // ═══════════ 11. GALERÍA ═══════════
 let GAL_DATA=[];
+let LB_PHOTOS=[],LB_IDX=0,LB_INFO=null;
+// Reúne las hasta 6 fotos (3 antes + 3 después) de un registro
+function fotosDeRegistro(r){
+  const out=[];
+  ['fotoAntes','fotoAntes2','fotoAntes3'].forEach((k,i)=>{ if(r[k]) out.push({url:r[k],lbl:'Antes '+(i+1),tipo:'antes'}); });
+  ['fotoDespues','fotoDespues2','fotoDespues3'].forEach((k,i)=>{ if(r[k]) out.push({url:r[k],lbl:'Después '+(i+1),tipo:'despues'}); });
+  return out;
+}
 function vGaleria(cont,d){
-  GAL_DATA=d.filter(r=>r.fotoAntes||r.fotoDespues).sort((a,b)=>(b.fecha||0)-(a.fecha||0));
-  const completas=GAL_DATA.filter(r=>r.fotoAntes&&r.fotoDespues).length;
-  const pend=GAL_DATA.filter(r=>!r.fotoDespues).length;
+  GAL_DATA=d.filter(r=>fotosDeRegistro(r).length>0).sort((a,b)=>(b.fecha||0)-(a.fecha||0));
+  let totAntes=0,totDes=0,visCompletas=0;
+  GAL_DATA.forEach(r=>{
+    const a=['fotoAntes','fotoAntes2','fotoAntes3'].filter(k=>r[k]).length;
+    const b=['fotoDespues','fotoDespues2','fotoDespues3'].filter(k=>r[k]).length;
+    totAntes+=a;totDes+=b;if(a>=3&&b>=3)visCompletas++;
+  });
   const cards=GAL_DATA.map((r,idx)=>{
-    const ia=dImg(r.fotoAntes,500),ib=dImg(r.fotoDespues,500);
+    const antes=['fotoAntes','fotoAntes2','fotoAntes3'].map(k=>r[k]||null);
+    const des=['fotoDespues','fotoDespues2','fotoDespues3'].map(k=>r[k]||null);
+    const nA=antes.filter(Boolean).length,nD=des.filter(Boolean).length;
+    const rowAntes=antes.map((u,i)=>{
+      const url=dImg(u,320);
+      return `<div class="gal-img">${url?`<img src="${url}" alt="" loading="lazy">`:'<div class="ph">'+(i<nA?'—':'Sin foto')+'</div>'}<span>A${i+1}</span></div>`;
+    }).join('');
+    const rowDes=des.map((u,i)=>{
+      const url=dImg(u,320);
+      return `<div class="gal-img">${url?`<img src="${url}" alt="" loading="lazy">`:'<div class="ph">Pendiente</div>'}<span>D${i+1}</span></div>`;
+    }).join('');
     return `<div class="gal-card" onclick="abrirLB(${idx})">
-      <div class="gal-imgs">
-        <div class="gal-img">${ia?`<img src="${ia}" alt="" loading="lazy">`:'<div class="ph">Sin foto</div>'}<span>Antes</span></div>
-        <div class="gal-img">${ib?`<img src="${ib}" alt="" loading="lazy">`:'<div class="ph">Pendiente</div>'}<span>Después</span></div>
+      <div class="gal-group">
+        <div class="gal-group-title"><svg style="width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24"><use href="#i-img"/></svg> Antes<span class="gal-count">${nA}/3</span></div>
+        <div class="gal-imgs">${rowAntes}</div>
+      </div>
+      <div class="gal-group">
+        <div class="gal-group-title"><svg style="width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24"><use href="#i-check"/></svg> Después<span class="gal-count">${nD}/3</span></div>
+        <div class="gal-imgs">${rowDes}</div>
       </div>
       <div class="gal-info">
         <b>${esc(r.pdv||'—')}</b>
@@ -1468,23 +1621,59 @@ function vGaleria(cont,d){
   cont.innerHTML=`
   <div class="kpis">
     ${kpi('ic-blue','i-img',fN(GAL_DATA.length),'Visitas con foto','')}
-    ${kpi('ic-green','i-check',fN(completas),'Antes y Después',Math.round(completas/Math.max(1,GAL_DATA.length)*100)+'%')}
-    ${kpi('ic-orange','i-clock',fN(pend),'Pendientes Después','')}
+    ${kpi('ic-green','i-check',fN(visCompletas),'Set completo 3+3',Math.round(visCompletas/Math.max(1,GAL_DATA.length)*100)+'%')}
+    ${kpi('ic-cyan','i-img',fN(totAntes),'Fotos ANTES','totales')}
+    ${kpi('ic-orange','i-img',fN(totDes),'Fotos DESPUÉS','totales')}
   </div>
   <div class="card">
-    <div class="card-h"><h3><svg><use href="#i-img"/></svg>Galería Antes / Después</h3><span class="tag">Click para ampliar</span></div>
+    <div class="card-h"><h3><svg><use href="#i-img"/></svg>Galería Antes / Después · hasta 3 fotos por lado</h3><span class="tag">Click para ampliar</span></div>
     ${GAL_DATA.length?`<div class="gal-grid">${cards}</div>`:'<div class="empty">Sin fotos</div>'}
   </div>`;
 }
+
+// ═══════════ LIGHTBOX pro con navegación ═══════════
 function abrirLB(idx){
   const r=GAL_DATA[idx];if(!r)return;
-  const ia=dImg(r.fotoAntes,1400),ib=dImg(r.fotoDespues,1400);
-  document.getElementById('lbPic1').innerHTML=ia?`<img src="${ia}"><span>Antes</span>`:`<div class="lb-ph">Sin foto Antes</div><span>Antes</span>`;
-  document.getElementById('lbPic2').innerHTML=ib?`<img src="${ib}"><span>Después</span>`:`<div class="lb-ph">Pendiente foto Después</div><span>Después</span>`;
+  LB_INFO=r;
+  LB_PHOTOS=fotosDeRegistro(r);
+  if(!LB_PHOTOS.length)return;
+  LB_IDX=0;
+  document.getElementById('lbTitle').textContent=(r.pdv||'—')+' · '+(r.ciudad||'—');
+  document.getElementById('lbSub').textContent=(r.nombre||'—')+' · '+(r.fecha?r.fecha.toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'}):'—');
+  pintarLBThumbs();
+  pintarLBFoto();
   document.getElementById('lb').classList.add('on');
 }
-function cerrarLB(e){if(e&&e.target.closest('.lb-box'))return;document.getElementById('lb').classList.remove('on')}
-document.addEventListener('keydown',e=>{if(e.key==='Escape')cerrarLB()});
+function pintarLBThumbs(){
+  const box=document.getElementById('lbThumbs');
+  box.innerHTML=LB_PHOTOS.map((p,i)=>{
+    const url=dImg(p.url,120);
+    return `<button class="lb-thumb${i===LB_IDX?' on':''}" onclick="lbGo(${i})">
+      ${url?`<img src="${url}" alt="">`:'<div class="ph">×</div>'}
+      <span class="lb-thumb-tag">${p.lbl}</span>
+    </button>`;
+  }).join('');
+}
+function pintarLBFoto(){
+  const p=LB_PHOTOS[LB_IDX];
+  const main=document.getElementById('lbPicMain');
+  const url=p?dImg(p.url,1400):'';
+  const prev=`<button class="lb-nav prev" onclick="lbNav(-1)"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>`;
+  const next=`<button class="lb-nav next" onclick="lbNav(1)"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>`;
+  main.innerHTML=(LB_PHOTOS.length>1?prev+next:'')
+    +(url?`<img src="${url}" alt="">`:`<div class="lb-ph">Sin foto</div>`)
+    +`<div class="lb-lbl">${p?p.lbl:''} · ${LB_IDX+1} / ${LB_PHOTOS.length}</div>`;
+  document.querySelectorAll('.lb-thumb').forEach((el,i)=>el.classList.toggle('on',i===LB_IDX));
+}
+function lbNav(d){LB_IDX=(LB_IDX+d+LB_PHOTOS.length)%LB_PHOTOS.length;pintarLBFoto()}
+function lbGo(i){LB_IDX=i;pintarLBFoto()}
+function cerrarLB(e){if(e&&e.target.closest('.lb-wrap'))return;document.getElementById('lb').classList.remove('on')}
+document.addEventListener('keydown',e=>{
+  if(!document.getElementById('lb').classList.contains('on'))return;
+  if(e.key==='Escape')cerrarLB();
+  else if(e.key==='ArrowLeft')lbNav(-1);
+  else if(e.key==='ArrowRight')lbNav(1);
+});
 </script>
 </body>
 </html>
