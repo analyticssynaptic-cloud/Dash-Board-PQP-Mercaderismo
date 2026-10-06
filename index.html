@@ -6,6 +6,8 @@
 <meta name="theme-color" content="#1e3a8a">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>PQP Analytics · Synaptic</title>
+<link rel="preconnect" href="https://script.google.com">
+<link rel="preconnect" href="https://script.googleusercontent.com" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -632,6 +634,7 @@ tbody tr:hover{background:var(--surface-2)}
 <script>
 const DASH_URL='https://script.google.com/macros/s/AKfycbw6gtyJBa1_JcXlsJMhgWc7QRBqGoGDMwlBW8keirJNa919quiV8iBB1EBv4wIWlbYD3Q/exec';
 const LS_SESSION='pqp_dash_session_v2';
+const LS_CACHE='pqp_dash_cache_v1';
 
 let TODOS=[],SKUS=[],SKU_MAP={},VISTA='visitas',CH={};
 let F={merc:'',ciudad:'',desde:'',hasta:'',mes:'',anio:''};
@@ -811,7 +814,7 @@ function entrarShell(){
   if(SESSION.exp)document.getElementById('userExp').textContent='Hasta '+new Date(SESSION.exp).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
   cargar();
 }
-function logout(){SESSION=null;localStorage.removeItem(LS_SESSION);location.reload()}
+function logout(){SESSION=null;localStorage.removeItem(LS_SESSION);try{localStorage.removeItem(LS_CACHE)}catch(e){}location.reload()}
 
 // ═══════════ MOBILE UI ═══════════
 function toggleSidebar(){
@@ -843,21 +846,30 @@ window.addEventListener('load',()=>setTimeout(ocultarLoader,300));
 try{const raw=localStorage.getItem(LS_SESSION);if(raw){const s=JSON.parse(raw);if(s&&s.session&&new Date(s.exp).getTime()>Date.now()){SESSION=s;entrarShell()}}}catch(e){}
 
 // ═══════════ DATOS ═══════════
-async function cargar(){
-  set('<div class="state"><div class="spin"></div><h3>Cargando datos…</h3><p>Consultando la hoja Registros</p></div>');
+function aplicarDatos(d){
+  SKUS=d.skus||[];SKU_MAP={};SKUS.forEach(s=>{SKU_MAP[s.sku]={precio:s.precio||0,categoria:s.categoria||''}});
+  TODOS=(d.registros||[]).map(norm);
+  actualizarBadges();pintarFiltros();render();
+}
+// Muestra al instante lo último descargado y refresca en segundo plano (silencioso = refresco automático)
+async function cargar(silencioso){
+  let pintado=false;
+  if(!silencioso){
+    try{const c=JSON.parse(localStorage.getItem(LS_CACHE)||'null');if(c&&c.sess===(SESSION&&SESSION.email)&&c.d&&c.d.success){aplicarDatos(c.d);pintado=true;document.getElementById('rTxt').textContent='Actualizando…'}}catch(e){}
+  }
+  if(!pintado)set('<div class="state"><div class="spin"></div><h3>Cargando datos…</h3><p>Consultando la hoja Registros</p></div>');
   try{
     const d=await callDash(DASH_URL+'?action=datos&session='+encodeURIComponent(SESSION?SESSION.session:''));
-    if(d.reauth){logout();return}
-    if(!d.success){set('<div class="state"><h3>Error al cargar</h3><p>'+(d.error||'')+'</p></div>');return}
-    SKUS=d.skus||[];SKU_MAP={};SKUS.forEach(s=>{SKU_MAP[s.sku]={precio:s.precio||0,categoria:s.categoria||''}});
-    TODOS=(d.registros||[]).map(norm);
-    actualizarBadges();pintarFiltros();render();autoRefresh();
-  }catch(e){set('<div class="state"><h3>Sin conexión</h3><p style="max-width:560px;margin:0 auto">'+e.message+'</p></div>')}
+    if(d.reauth){try{localStorage.removeItem(LS_CACHE)}catch(e){}logout();return}
+    if(!d.success){if(!pintado)set('<div class="state"><h3>Error al cargar</h3><p>'+(d.error||'')+'</p></div>');return}
+    try{const t=JSON.stringify({sess:SESSION&&SESSION.email,d});if(t.length<4500000)localStorage.setItem(LS_CACHE,t);else localStorage.removeItem(LS_CACHE)}catch(e){try{localStorage.removeItem(LS_CACHE)}catch(_){}}
+    aplicarDatos(d);autoRefresh();
+  }catch(e){if(!pintado)set('<div class="state"><h3>Sin conexión</h3><p style="max-width:560px;margin:0 auto">'+e.message+'</p></div>');else autoRefresh()}
 }
 function autoRefresh(){
   clearInterval(rTimer);let m=rMins;
   document.getElementById('rTxt').textContent='Auto '+m+' min';
-  rTimer=setInterval(()=>{m--;document.getElementById('rTxt').textContent=m>0?'Auto '+m+' min':'Actualizando…';if(m<=0){cargar();m=rMins}},60000);
+  rTimer=setInterval(()=>{m--;document.getElementById('rTxt').textContent=m>0?'Auto '+m+' min':'Actualizando…';if(m<=0){cargar(true);m=rMins}},60000);
 }
 
 function sinAcento(x){return String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\s+/g,' ').trim()}
