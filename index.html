@@ -651,7 +651,7 @@ const RUTA_ASIGN=[
   {pref:'aninay pacheco',nombre:'Aninay Pacheco',desde:'2026-09-16',hasta:null}
 ];
 // Un mismo PDV guardado con otro nombre en la herramienta
-const PDV_ALIAS={'la chinga niquia':'la chinca niquia','supermercado mundo oferta':'supermercado mundo ofertas'};
+const PDV_ALIAS={'la chinga niquia':'la chinca niquia','supermercado mundo oferta':'supermercado mundo ofertas','supermercado mundo ofertas':'supermercado mundo ofertas'};
 // Correcciones confirmadas por PQP: la 2000 del 28 y 30 sep fue Comercializadora, no Supermercado Niquía
 const CORRECCIONES=[{pref:'aninay pacheco',fechas:['2026-09-28','2026-09-30'],de:'supermercado la 2000 niquia',a:'Comercializadora La 2000'}];
 
@@ -861,14 +861,14 @@ function autoRefresh(){
 }
 
 function sinAcento(x){return String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\s+/g,' ').trim()}
-function pdvKey(x){const k=sinAcento(x);return PDV_ALIAS[k]||k}
+function pdvKey(x){const k=sinAcento(x);return (PDV_ALIAS[k]||k).replace(/[^a-z0-9]/g,'')}
 function dkey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function titulo(x){return String(x||'').replace(/\s+/g,' ').trim().toLowerCase().replace(/(^|\s)\S/g,c=>c.toUpperCase())}
 function norm(r){
   if(r.nombre)r.nombre=titulo(r.nombre);
   r.fecha=r.timestamp?new Date(r.timestamp):null;
   r.fechaInicio=r.horaInicio?new Date(r.horaInicio):r.fecha;
-  if(r.fecha&&r.pdv){const dk=dkey(r.fecha),nm=sinAcento(r.nombre);CORRECCIONES.forEach(c=>{if(nm.startsWith(c.pref)&&c.fechas.includes(dk)&&pdvKey(r.pdv)===c.de){r.pdvOriginal=r.pdv;r.pdv=c.a;r.corregido=true}})}
+  if(r.fecha&&r.pdv){const dk=dkey(r.fecha),nm=sinAcento(r.nombre);CORRECCIONES.forEach(c=>{if(nm.includes(c.pref.split(' ')[0])&&c.fechas.includes(dk)&&pdvKey(r.pdv)===pdvKey(c.de)){r.pdvOriginal=r.pdv;r.pdv=c.a;r.corregido=true}})}
   r.duracionMs=(r.fecha&&r.fechaInicio)?Math.max(0,r.fecha-r.fechaInicio):0;
   r.totalPedido=num(r.pedidoTotalFinal);
   r.numProductos=(r.pedidoProductos||[]).length;
@@ -1188,12 +1188,13 @@ function semISO(dk){
   return Math.ceil(((t-y0)/86400000+1)/7);
 }
 function diaCorto(dk){const [y,m,d]=dk.split('-').map(Number);const n=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'][new Date(y,m-1,d).getDay()];return n+' '+d+'/'+String(m).padStart(2,'0')}
+function esMerc(r,a){return sinAcento(r.nombre).includes(a.pref.split(' ')[0])}
 function rutaCalc(d){
   const hoy=dkey(new Date());
   const out=[];
   RUTA_ASIGN.forEach(a=>{
-    if(F.merc&&!sinAcento(F.merc).startsWith(a.pref))return;
-    const vis=d.filter(r=>r.fecha&&r.pdv&&sinAcento(r.nombre).startsWith(a.pref));
+    if(F.merc&&!sinAcento(F.merc).includes(a.pref.split(' ')[0]))return;
+    const vis=d.filter(r=>r.fecha&&!isNaN(r.fecha.getTime())&&r.pdv&&esMerc(r,a));
     const porDiaV={};vis.forEach(r=>{const k=dkey(r.fecha);(porDiaV[k]=porDiaV[k]||[]).push(r)});
     const ini=F.desde&&F.desde>a.desde?F.desde:a.desde;
     const fin=[a.hasta||hoy,F.hasta||hoy,hoy].reduce((x,y)=>x<y?x:y);
@@ -1249,6 +1250,12 @@ function vRuta(cont,d){
     return `<tr><td><b>${esc(x.a.nombre)}</b></td><td class="r">${x.dias.length}</td><td class="r">${p}</td><td class="r">${o}</td><td class="r">${e}</td><td class="r"><span class="pill ${cls(v)}">${v}%</span></td></tr>`;
   }).join('');
   const corr=d.filter(r=>r.corregido).length;
+  let diag='';
+  if(tOk===0||tOk<tP*0.3){
+    const mu=d.slice(0,3).map(r=>`${esc(r.nombre||'—')} · ${esc(r.pdv||'—')} · ${r.fecha&&!isNaN(r.fecha.getTime())?dkey(r.fecha):'fecha inválida ('+esc(String(r.timestamp))+')'}`).join('<br>');
+    const asg=res.map(x=>x.a.nombre+': '+x.vis.length+' registros').join(' · ');
+    diag=`<div class="card warn"><div class="rnote"><b>Diagnóstico.</b> El cumplimiento salió muy bajo; revisa que los datos coincidan con el rutero.<br>Registros recibidos: <b>${TODOS.length}</b> · en el filtro: <b>${d.length}</b> · ${asg}<br>Ejemplos:<br>${mu||'—'}</div></div>`;
+  }
   const cuadra=cumplTot>=100;
   cont.innerHTML=`
   <div class="alert-banner ${cuadra?'ok':cumplTot>=90?'':'bad'}"><svg><use href="#i-${cuadra?'check':'alert'}"/></svg><div><b>Cumplimiento de ruta ${cumplTot}% · ${tOk} de ${tP} visitas programadas</b><span>${cuadra?'Toda la ruta programada se visitó en su día':(tP-tOk)+' visitas programadas quedaron sin ejecutar en su día'} · ${tExt} visitas fuera de rutero</span></div></div>
@@ -1268,6 +1275,7 @@ function vRuta(cont,d){
     ${card('<svg><use href="#i-store"/></svg>Cumplimiento por PDV','visitas en su día','<div class="scroll-y">'+pdvHtml+'</div>')}
     ${card('<svg><use href="#i-cal"/></svg>Detalle día a día','últimos '+diasOrd.length+' días de ruta','<div class="tw" style="max-height:420px"><table><thead><tr><th>Día</th><th class="r">Plan</th><th class="r">Hechas</th><th>Estado</th><th>PDV <span class="rchip ok">visitado</span><span class="rchip miss">pendiente</span><span class="rchip ext">extra</span></th></tr></thead><tbody>'+diaRows+'</tbody></table></div>')}
   </div>
+  ${diag}
   <div class="card"><div class="rnote"><b>Cómo se mide.</b> Una visita cuenta como cumplida cuando el PDV programado en el rutero Medellín se visitó el mismo día. Los registros se asignan por mercaderista: Natalia Rueda hasta el 13 de sep y Aninay Pacheco desde el 16 de sep (14 y 15 de sep fueron capacitación). El día en curso no se cuenta hasta que cierra.${corr?`<br><b>Corrección aplicada:</b> ${corr} visitas de Aninay (28 y 30 de sep) se guardaron como Supermercado La 2000 Niquia y corresponden a Comercializadora La 2000, según confirmó PQP.`:''}</div></div>`;
   CH.ruta=new Chart(document.getElementById('chRuta'),{data:{labels:semArr.map(w=>'Sem '+w.sem),datasets:[
     {type:'bar',label:'Programadas',data:semArr.map(w=>w.plan),backgroundColor:'rgba(148,163,184,.45)',borderRadius:5,yAxisID:'y'},
