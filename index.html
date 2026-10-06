@@ -174,7 +174,7 @@ svg{pointer-events:none}a{color:var(--p2);text-decoration:none}
 .kpi:hover{border-color:var(--line);box-shadow:var(--sh)}
 .kpi-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .kpi-ic{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.kpi-ic svg{width:15px;height:15px;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.kpi-ic svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .kpi-trend{font-family:'Plus Jakarta Sans';font-size:9.5px;font-weight:800;padding:2px 6px;border-radius:20px}
 .kpi-trend.up{background:var(--ok-s);color:#15803d}.kpi-trend.down{background:var(--bad-s);color:#991b1b}.kpi-trend.neutral{background:var(--line-3);color:var(--muted)}
 .kpi-val{font-family:'Plus Jakarta Sans';font-weight:800;font-size:20px;color:var(--ink);line-height:1.05;letter-spacing:-.02em}
@@ -230,6 +230,16 @@ svg{pointer-events:none}a{color:var(--p2);text-decoration:none}
 .h180{height:180px;position:relative}
 .h140{height:140px;position:relative}
 .scroll-y{max-height:280px;overflow-y:auto}
+
+/* Cumplimiento de ruta */
+.rchip{display:inline-block;font-size:10px;font-weight:600;padding:2px 8px;border-radius:12px;margin:1px 3px 1px 0;white-space:nowrap}
+.rchip.ok{background:var(--ok-s);color:#15803d}.rchip.miss{background:var(--warn-s);color:#92400e}.rchip.ext{background:#dbeafe;color:#1d4ed8}
+.rbar{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--line-2);font-size:12px}
+.rbar:last-child{border-bottom:none}.rbar .rn{flex:0 0 190px;font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rbar .rt{flex:1;height:7px;background:var(--line-2);border-radius:4px;overflow:hidden}.rbar .rt i{display:block;height:100%;border-radius:4px}
+.rbar .rv{flex:0 0 74px;text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+.rnote{font-size:11.5px;color:var(--ink-2);line-height:1.6}
+.rnote b{color:var(--ink)}
 
 /* Tabla compacta */
 .tw{overflow-x:auto;max-height:300px;overflow-y:auto;border-radius:9px}
@@ -458,6 +468,7 @@ tbody tr:hover{background:var(--surface-2)}
 
 <svg style="display:none" xmlns="http://www.w3.org/2000/svg">
 <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></symbol>
+<symbol id="i-route" viewBox="0 0 24 24"><circle cx="6" cy="19" r="2.5"/><circle cx="18" cy="5" r="2.5"/><path d="M8.5 19H15a3.5 3.5 0 000-7H9a3.5 3.5 0 010-7h6.5"/></symbol>
 <symbol id="i-trend" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></symbol>
 <symbol id="i-cart" viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 002 1.6h9.7a2 2 0 002-1.6L23 6H6"/></symbol>
 <symbol id="i-box" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></symbol>
@@ -566,6 +577,7 @@ tbody tr:hover{background:var(--surface-2)}
       <button class="sbi on" data-v="visitas" onclick="setV('visitas')"><svg><use href="#i-map"/></svg><span>Visitas</span></button>
       <button class="sbi" data-v="resumen" onclick="setV('resumen')"><svg><use href="#i-grid"/></svg><span>Resumen</span></button>
       <button class="sbi" data-v="equipo" onclick="setV('equipo')"><svg><use href="#i-users"/></svg><span>Equipo</span></button>
+      <button class="sbi" data-v="ruta" onclick="setV('ruta')"><svg><use href="#i-route"/></svg><span>Cumplimiento ruta</span></button>
       <div class="sb-sep">Comercial</div>
       <button class="sbi" data-v="ventas" onclick="setV('ventas')"><svg><use href="#i-trend"/></svg><span>Ventas</span></button>
       <button class="sbi" data-v="sugerido" onclick="setV('sugerido')"><svg><use href="#i-cart"/></svg><span>Sugerido</span></button>
@@ -625,9 +637,23 @@ let TODOS=[],SKUS=[],SKU_MAP={},VISTA='visitas',CH={};
 let F={merc:'',ciudad:'',desde:'',hasta:'',mes:'',anio:''};
 let SESSION=null,rTimer=null,rMins=60;
 
-const TITULOS={visitas:'Visitas',resumen:'Resumen',equipo:'Equipo',ventas:'Ventas',sugerido:'Sugerido',chequeo:'Chek de Precios',inventario:'Inventario',agotados:'Agotados',fechas:'Fechas Cortas',muestraspop:'Muestras y POP',galeria:'Galería'};
-const SUBS={visitas:'Trazabilidad de campo y cobertura',resumen:'Vista ejecutiva',equipo:'Mercaderistas y desempeño',ventas:'Conversión y valor monetizado',sugerido:'Pedidos sugeridos',chequeo:'Mix de precios propio vs competencia',inventario:'Stock en estante',agotados:'Alertas y patrones',fechas:'Productos próximos a vencer',muestraspop:'Muestras y material POP entregado',galeria:'Antes y después · click para ampliar'};
+const TITULOS={visitas:'Visitas',resumen:'Resumen',equipo:'Equipo',ruta:'Cumplimiento de ruta',ventas:'Ventas',sugerido:'Sugerido',chequeo:'Chek de Precios',inventario:'Inventario',agotados:'Agotados',fechas:'Fechas Cortas',muestraspop:'Muestras y POP',galeria:'Galería'};
+const SUBS={visitas:'Trazabilidad de campo y cobertura',resumen:'Vista ejecutiva',equipo:'Mercaderistas y desempeño',ruta:'Visitas ejecutadas vs. rutero programado',ventas:'Conversión y valor monetizado',sugerido:'Pedidos sugeridos',chequeo:'Mix de precios propio vs competencia',inventario:'Stock en estante',agotados:'Alertas y patrones',fechas:'Productos próximos a vencer',muestraspop:'Muestras y material POP entregado',galeria:'Antes y después · click para ampliar'};
 const COLORES=['#1d4ed8','#06b6d4','#7c3aed','#0d9488','#f97316','#db2777','#d97706','#dc2626','#16a34a','#0ea5e9'];
+
+// ═══════════ RUTA · rutero Medellín ═══════════
+// Fuente: Rutero PQP Mercadeo (1).xlsx · hoja Cronograma Medellin. Fecha ISO -> PDV programados ese día.
+// Capacitación (14 y 15 sep) no se programa como PDV y por eso no cuenta dentro de la ruta.
+const RUTA_PLAN={"2026-07-01":["La 80 cabañas","Mercados Y Carnes O.R","Comercializadora La 2000"],"2026-07-02":["Mercados La Raza","Dinastia San Javier","Tropiexpress","Boom La America","Boom la 33"],"2026-07-03":["La 80 cabañas","Mercados Y Carnes O.R","Maxiofertas Niquia","Comercializadora La 2000"],"2026-07-04":["La 80 cabañas","Mercados Y Carnes O.R"],"2026-07-06":["La 80 cabañas","Mercados Y Carnes O.R","La chinca bello","Maxiofertas Niquia","Comercializadora La 2000"],"2026-07-07":["Dinastia Plaza De Flores","Dinastia Castilla","Merca Alex","Mercados La Raza"],"2026-07-08":["La 80 cabañas","Mercados Y Carnes O.R","La chinca bello","Maxiofertas Niquia","Comercializadora La 2000"],"2026-07-09":["Dinastia Plaza De Flores","Dinastia San Javier","Tropiexpress","La Bendición"],"2026-07-10":["La 80 cabañas","Mercados Y Carnes O.R","Maxiofertas Niquia","Comercializadora La 2000","La Chinca Niquía"],"2026-07-11":["La 80 cabañas","La chinca bello"],"2026-07-14":["Dinastia Plaza De Flores","Dinastia Castilla","Merca Alex","Mercados La Raza"],"2026-07-15":["La 80 cabañas","Mercados Y Carnes O.R","La chinca bello","Maxiofertas Niquia","Comercializadora La 2000"],"2026-07-16":["Dinastia Plaza De Flores","Dinastia San Javier","Tropiexpress","La Bendición"],"2026-07-17":["La 80 cabañas","Mercados Y Carnes O.R","Maxiofertas Niquia","La Chinca Niquía","Supermercado La 2000 Niquia"],"2026-07-18":["La 80 cabañas","Mercados Y Carnes O.R"],"2026-07-21":["Dinastia Plaza De Flores","Dinastia Castilla","Merca Alex","Mercados La Raza"],"2026-07-22":["La 80 cabañas","Mercados Y Carnes O.R","La chinca bello","Maxiofertas Niquia","Comercializadora La 2000"],"2026-07-23":["Dinastia Plaza De Flores","Dinastia San Javier","Tropiexpress","La Bendición"],"2026-07-24":["La 80 cabañas","Mercados Y Carnes O.R","Maxiofertas Niquia","La Chinca Niquía","Supermercado La 2000 Niquia"],"2026-07-25":["La 80 cabañas","La chinca bello"],"2026-07-27":["La 80 cabañas","Mercados Y Carnes O.R","La chinca bello","Maxiofertas Niquia","Comercializadora La 2000"],"2026-07-28":["Dinastia Plaza De Flores","Dinastia Castilla","Merca Alex","Mercados La Raza"],"2026-07-29":["La 80 cabañas","Mercados Y Carnes O.R","La chinca bello","Maxiofertas Niquia","Comercializadora La 2000"],"2026-07-30":["Dinastia Plaza De Flores","Dinastia San Javier","Tropiexpress","La Bendición"],"2026-07-31":["La 80 cabañas","Mercados Y Carnes O.R","Maxiofertas Niquia","La Chinca Niquía","Supermercado La 2000 Niquia"],"2026-08-01":["La 80 cabañas","Maxiofertas Copacabana"],"2026-08-03":["La 80 cabañas","Mercados Y Carnes O.R","La chinca bello","Maxiofertas Niquia","Comercializadora La 2000"],"2026-08-04":["Dinastia Castilla","Merca Alex","Mercados La Raza","Supermercado Mundo Oferta"],"2026-08-05":["La 80 cabañas","Mercados Y Carnes O.R","La chinca bello"],"2026-08-06":["Dinastia Plaza De Flores","Dinastia San Javier","Tropiexpress","La Bendición"],"2026-08-08":["La 80 cabañas","Mercados Y Carnes O.R"],"2026-08-10":["La 80 cabañas","Mercados Y Carnes O.R","La chinca bello","Maxiofertas Niquia","Comercializadora La 2000"],"2026-08-11":["Dinastia Castilla","Merca Alex","Mercados La Raza","Supermercado Mundo Oferta"],"2026-08-12":["La 80 cabañas","Mercados Y Carnes O.R","La chinca bello","Maxiofertas Niquia","Comercializadora La 2000"],"2026-08-13":["Dinastia Plaza De Flores","Dinastia San Javier","Tropiexpress","La Bendición"],"2026-08-14":["La 80 cabañas","Mercados Y Carnes O.R","Maxiofertas Niquia","La Chinca Niquía","Supermercado La 2000 Niquia"],"2026-08-15":["La 80 cabañas","La Chinca Niquía"],"2026-08-17":["La 80 cabañas","Mercados Y Carnes O.R","La chinca bello","Maxiofertas Niquia","Comercializadora La 2000"],"2026-08-18":["Dinastia Castilla","Merca Alex","Mercados La Raza","Supermercado Mundo Oferta"],"2026-08-19":["La 80 cabañas","Mercados Y Carnes O.R","La chinca bello","Maxiofertas Niquia","Comercializadora La 2000"],"2026-08-20":["Dinastia Plaza De Flores","Dinastia San Javier","Tropiexpress","La Bendición"],"2026-08-21":["La 80 cabañas","Mercados Y Carnes O.R","Maxiofertas Niquia","La Chinca Niquía","Supermercado La 2000 Niquia"],"2026-08-22":["La 80 cabañas","Mercados Y Carnes O.R"],"2026-08-24":["La 80 cabañas","Mercados Y Carnes O.R","La chinca bello","Maxiofertas Niquia","Comercializadora La 2000"],"2026-08-25":["Dinastia Castilla","Merca Alex","Mercados La Raza","Supermercado Mundo Oferta"],"2026-08-26":["La 80 cabañas","Mercados Y Carnes O.R","La chinca bello","Maxiofertas Niquia","Comercializadora La 2000"],"2026-08-27":["Dinastia Plaza De Flores","Dinastia San Javier","Tropiexpress","La Bendición"],"2026-08-28":["La 80 cabañas","Mercados Y Carnes O.R","Maxiofertas Niquia","La Chinca Niquía","Supermercado La 2000 Niquia"],"2026-08-29":["La 80 cabañas","Mercados Y Carnes O.R"],"2026-08-31":["La 80 cabañas","Mercados Y Carnes O.R","La chinca bello","Maxiofertas Niquia","Comercializadora La 2000"],"2026-09-16":["La 80 cabañas","Mercados Y Carnes O.R","La chinca bello","Maxiofertas Niquia","Comercializadora La 2000"],"2026-09-17":["Dinastia Plaza De Flores","Dinastia San Javier","Tropiexpress","La Bendición"],"2026-09-18":["La 80 cabañas","Mercados Y Carnes O.R","Maxiofertas Niquia","La Chinca Niquía","Supermercado La 2000 Niquia"],"2026-09-19":["La 80 cabañas","Mercados Y Carnes O.R"],"2026-09-21":["La 80 cabañas","Mercados Y Carnes O.R","La chinca bello","Comercializadora La 2000"],"2026-09-22":["Dinastia Castilla","Merca Alex","Mercados La Raza"],"2026-09-23":["La 80 cabañas","Mercados Y Carnes O.R","Maxiofertas Niquia","Comercializadora La 2000","Supermercado Mundo Oferta"],"2026-09-24":["Dinastia Plaza De Flores","Dinastia San Javier","Tropiexpress","La Bendición"],"2026-09-25":["La 80 cabañas","Mercados Y Carnes O.R","Maxiofertas Niquia","La Chinca Niquía","Supermercado La 2000 Niquia"],"2026-09-26":["La 80 cabañas","Mercados Y Carnes O.R"],"2026-09-28":["La 80 cabañas","Mercados Y Carnes O.R","La chinca bello","Maxiofertas Niquia","Comercializadora La 2000","Supermercado Mundo Oferta"],"2026-09-29":["Dinastia Castilla","Merca Alex","Mercados La Raza"],"2026-09-30":["La 80 cabañas","Mercados Y Carnes O.R","La chinca bello","Maxiofertas Niquia","Comercializadora La 2000"],"2026-10-01":["Dinastia Plaza De Flores","Dinastia San Javier","Tropiexpress","La Bendición"],"2026-10-02":["La 80 cabañas","Mercados Y Carnes O.R","Maxiofertas Niquia","La Chinca Niquía","Supermercado La 2000 Niquia"],"2026-10-03":["La 80 cabañas","Mercados Y Carnes O.R"],"2026-10-05":["La 80 cabañas","Mercados Y Carnes O.R","La chinca bello","Maxiofertas Niquia","Comercializadora La 2000"],"2026-10-06":["Dinastia Castilla","Merca Alex","Mercados La Raza","Supermercado Mundo Oferta"],"2026-10-07":["La 80 cabañas","Mercados Y Carnes O.R","La chinca bello","Maxiofertas Niquia","Comercializadora La 2000"],"2026-10-08":["Dinastia Plaza De Flores","Dinastia San Javier","Tropiexpress","La Bendición"],"2026-10-09":["La 80 cabañas","Mercados Y Carnes O.R","Maxiofertas Niquia","La Chinca Niquía","Supermercado La 2000 Niquia"],"2026-10-10":["Maxiofertas Niquia","La Chinca Niquía"],"2026-10-13":["Dinastia Castilla","Merca Alex","Mercados La Raza","Supermercado Mundo Oferta"],"2026-10-14":["La 80 cabañas","Mercados Y Carnes O.R","La chinca bello","Maxiofertas Niquia","Comercializadora La 2000"],"2026-10-15":["Dinastia Plaza De Flores","Dinastia San Javier","Tropiexpress","La Bendición"],"2026-10-16":["La 80 cabañas","Mercados Y Carnes O.R","Maxiofertas Niquia","La Chinca Niquía","Supermercado La 2000 Niquia"],"2026-10-17":["La 80 cabañas","Mercados Y Carnes O.R"],"2026-10-19":["La 80 cabañas","Mercados Y Carnes O.R","La chinca bello","Maxiofertas Niquia","Comercializadora La 2000"],"2026-10-20":["Dinastia Castilla","Merca Alex","Mercados La Raza","Supermercado Mundo Oferta"],"2026-10-21":["La 80 cabañas","Mercados Y Carnes O.R","La chinca bello","Maxiofertas Niquia","Comercializadora La 2000"],"2026-10-22":["Dinastia Plaza De Flores","Dinastia San Javier","Tropiexpress","La Bendición"],"2026-10-23":["La 80 cabañas","Mercados Y Carnes O.R","Maxiofertas Niquia","La Chinca Niquía","Supermercado La 2000 Niquia"],"2026-10-24":["Maxiofertas Niquia","La Chinca Niquía"],"2026-10-26":["La 80 cabañas","Mercados Y Carnes O.R","La chinca bello","Maxiofertas Niquia","Comercializadora La 2000"],"2026-10-27":["Dinastia Castilla","Merca Alex","Mercados La Raza","Supermercado Mundo Oferta"],"2026-10-28":["La 80 cabañas","Mercados Y Carnes O.R","La chinca bello","Maxiofertas Niquia","Comercializadora La 2000"],"2026-10-29":["Dinastia Plaza De Flores","Dinastia San Javier","Tropiexpress","La Bendición"],"2026-10-30":["La 80 cabañas","Mercados Y Carnes O.R","Maxiofertas Niquia","La Chinca Niquía","Supermercado La 2000 Niquia"],"2026-10-31":["La 80 cabañas","Mercados Y Carnes O.R"]};
+// Mercaderista responsable del rutero en cada periodo
+const RUTA_ASIGN=[
+  {pref:'natalia rueda',nombre:'Natalia Rueda',desde:'2026-07-01',hasta:'2026-09-13'},
+  {pref:'aninay pacheco',nombre:'Aninay Pacheco',desde:'2026-09-16',hasta:null}
+];
+// Un mismo PDV guardado con otro nombre en la herramienta
+const PDV_ALIAS={'la chinga niquia':'la chinca niquia','supermercado mundo oferta':'supermercado mundo ofertas'};
+// Correcciones confirmadas por PQP: la 2000 del 28 y 30 sep fue Comercializadora, no Supermercado Niquía
+const CORRECCIONES=[{pref:'aninay pacheco',fechas:['2026-09-28','2026-09-30'],de:'supermercado la 2000 niquia',a:'Comercializadora La 2000'}];
 
 // ═══════════ CHART.JS DEFAULTS pro ═══════════
 Chart.defaults.font.family='Inter';
@@ -834,9 +860,15 @@ function autoRefresh(){
   rTimer=setInterval(()=>{m--;document.getElementById('rTxt').textContent=m>0?'Auto '+m+' min':'Actualizando…';if(m<=0){cargar();m=rMins}},60000);
 }
 
+function sinAcento(x){return String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\s+/g,' ').trim()}
+function pdvKey(x){const k=sinAcento(x);return PDV_ALIAS[k]||k}
+function dkey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function titulo(x){return String(x||'').replace(/\s+/g,' ').trim().toLowerCase().replace(/(^|\s)\S/g,c=>c.toUpperCase())}
 function norm(r){
+  if(r.nombre)r.nombre=titulo(r.nombre);
   r.fecha=r.timestamp?new Date(r.timestamp):null;
   r.fechaInicio=r.horaInicio?new Date(r.horaInicio):r.fecha;
+  if(r.fecha&&r.pdv){const dk=dkey(r.fecha),nm=sinAcento(r.nombre);CORRECCIONES.forEach(c=>{if(nm.startsWith(c.pref)&&c.fechas.includes(dk)&&pdvKey(r.pdv)===c.de){r.pdvOriginal=r.pdv;r.pdv=c.a;r.corregido=true}})}
   r.duracionMs=(r.fecha&&r.fechaInicio)?Math.max(0,r.fecha-r.fechaInicio):0;
   r.totalPedido=num(r.pedidoTotalFinal);
   r.numProductos=(r.pedidoProductos||[]).length;
@@ -847,7 +879,7 @@ function norm(r){
   r.chequeos=(r.chequeoPrecios||[]);
   r.chequeosOk=r.chequeos.filter(c=>c.dentroDelRango===true||c.dentroDelRango==='true').length;
   r.chequeosFuera=r.chequeos.length-r.chequeosOk;
-  r.valorVenta=(r.ventaProductos||[]).reduce((s,p)=>{const ref=SKU_MAP[p.sku];const pr=ref?ref.precio:0;return s+pr*(num(p.cantidad)||0)},0);
+  r.valorVenta=(r.ventaProductos||[]).reduce((s,p)=>{const sub=num(p.subtotal);if(sub>0)return s+sub;const ref=SKU_MAP[p.sku];const pr=ref?ref.precio:0;return s+pr*(num(p.cantidad)||0)},0);
   if(r.fecha){r.hora=r.fecha.getHours();r.dow=r.fecha.getDay();r.anio=r.fecha.getFullYear();r.mes=r.fecha.getMonth()+1}
   return r;
 }
@@ -896,7 +928,7 @@ function filtrar(){
     if(F.ciudad&&r.ciudad!==F.ciudad)return false;
     if(F.anio&&r.anio!=F.anio)return false;
     if(F.mes&&r.mes!=F.mes)return false;
-    if(F.desde&&r.fecha&&r.fecha<new Date(F.desde))return false;
+    if(F.desde&&r.fecha&&r.fecha<new Date(F.desde+'T00:00:00'))return false;
     if(F.hasta&&r.fecha&&r.fecha>new Date(F.hasta+'T23:59:59'))return false;
     return true;
   });
@@ -909,7 +941,7 @@ function render(){
   document.getElementById('tbSub').textContent=(SUBS[VISTA]||'')+' · '+d.length+' gestiones · '+new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
   const cont=document.getElementById('content');
   if(!d.length&&TODOS.length){cont.innerHTML='<div class="state"><h3>Sin datos para el filtro</h3><p>Ajusta los segmentadores.</p></div>';return}
-  const views={visitas:vVisitas,resumen:vResumen,equipo:vEquipo,ventas:vVentas,sugerido:vSugerido,chequeo:vChequeo,inventario:vInventario,agotados:vAgotados,fechas:vFechas,muestraspop:vMuestrasPop,galeria:vGaleria};
+  const views={visitas:vVisitas,resumen:vResumen,equipo:vEquipo,ruta:vRuta,ventas:vVentas,sugerido:vSugerido,chequeo:vChequeo,inventario:vInventario,agotados:vAgotados,fechas:vFechas,muestraspop:vMuestrasPop,galeria:vGaleria};
   (views[VISTA]||vVisitas)(cont,d);
 }
 
@@ -947,7 +979,7 @@ function baseOpts(sc,noLeg){
 }
 function porDia(d){
   const m={};
-  d.forEach(r=>{if(!r.fecha)return;const k=r.fecha.toISOString().slice(0,10);if(!m[k])m[k]={g:0,v:0,vts:0};m[k].g++;m[k].v+=r.totalPedido;if(r.tieneVenta)m[k].vts++});
+  d.forEach(r=>{if(!r.fecha)return;const k=dkey(r.fecha);if(!m[k])m[k]={g:0,v:0,vts:0};m[k].g++;m[k].v+=r.totalPedido;if(r.tieneVenta)m[k].vts++});
   const k=Object.keys(m).sort();
   return{labels:k,gest:k.map(x=>m[x].g),val:k.map(x=>m[x].v),vts:k.map(x=>m[x].vts)};
 }
@@ -1148,6 +1180,102 @@ function vEquipo(cont,d){
   <div class="team-grid">${cards}</div>`;
 }
 
+
+// ═══════════ 0. CUMPLIMIENTO DE RUTA ═══════════
+function semISO(dk){
+  const [y,m,d]=dk.split('-').map(Number);const t=new Date(Date.UTC(y,m-1,d));const dow=t.getUTCDay()||7;
+  t.setUTCDate(t.getUTCDate()+4-dow);const y0=new Date(Date.UTC(t.getUTCFullYear(),0,1));
+  return Math.ceil(((t-y0)/86400000+1)/7);
+}
+function diaCorto(dk){const [y,m,d]=dk.split('-').map(Number);const n=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'][new Date(y,m-1,d).getDay()];return n+' '+d+'/'+String(m).padStart(2,'0')}
+function rutaCalc(d){
+  const hoy=dkey(new Date());
+  const out=[];
+  RUTA_ASIGN.forEach(a=>{
+    if(F.merc&&!sinAcento(F.merc).startsWith(a.pref))return;
+    const vis=d.filter(r=>r.fecha&&r.pdv&&sinAcento(r.nombre).startsWith(a.pref));
+    const porDiaV={};vis.forEach(r=>{const k=dkey(r.fecha);(porDiaV[k]=porDiaV[k]||[]).push(r)});
+    const ini=F.desde&&F.desde>a.desde?F.desde:a.desde;
+    const fin=[a.hasta||hoy,F.hasta||hoy,hoy].reduce((x,y)=>x<y?x:y);
+    const dias=[];
+    Object.keys(RUTA_PLAN).sort().forEach(dk=>{
+      if(dk<ini||dk>fin)return;
+      if(F.anio&&dk.slice(0,4)!==String(F.anio))return;
+      if(F.mes&&Number(dk.slice(5,7))!==Number(F.mes))return;
+      const vd=porDiaV[dk]||[];
+      if(dk>=hoy)return;
+      const keysV=new Set(vd.map(r=>pdvKey(r.pdv)));
+      const plan=RUTA_PLAN[dk].map(n=>({n,ok:keysV.has(pdvKey(n))}));
+      const keysP=new Set(RUTA_PLAN[dk].map(pdvKey));
+      const extras=[...new Set(vd.filter(r=>!keysP.has(pdvKey(r.pdv))).map(r=>r.pdv))];
+      dias.push({dk,sem:semISO(dk),plan,extras,vis:vd.length});
+    });
+    out.push({a,dias,vis});
+  });
+  return out;
+}
+function vRuta(cont,d){
+  const res=rutaCalc(d);
+  const todos=[].concat(...res.map(x=>x.dias));
+  if(!todos.length){cont.innerHTML='<div class="state"><h3>Sin días de ruta en el filtro</h3><p>El rutero Medellín cubre del 1 de julio en adelante. Ajusta el rango de fechas o el mercaderista.</p></div>';return}
+  const tP=todos.reduce((s,x)=>s+x.plan.length,0),tOk=todos.reduce((s,x)=>s+x.plan.filter(p=>p.ok).length,0);
+  const tExt=todos.reduce((s,x)=>s+x.extras.length,0);
+  const pct=n=>Math.round(n*1000)/10;
+  const cumplTot=tP?pct(tOk/tP):0;
+  const diasOk=todos.filter(x=>x.plan.every(p=>p.ok)).length;
+  const pdvPlan={};
+  todos.forEach(x=>x.plan.forEach(p=>{const k=pdvKey(p.n);if(!pdvPlan[k])pdvPlan[k]={n:p.n,plan:0,ok:0};pdvPlan[k].plan++;if(p.ok)pdvPlan[k].ok++}));
+  const pdvArr=Object.values(pdvPlan).sort((a,b)=>(b.ok/b.plan)-(a.ok/a.plan)||b.plan-a.plan);
+  const pdvCub=pdvArr.filter(x=>x.ok>0).length;
+  // semanas
+  const sm={};
+  todos.forEach(x=>{const k=x.sem;if(!sm[k])sm[k]={sem:k,ini:x.dk,fin:x.dk,plan:0,ok:0,ext:0,vis:0};const o=sm[k];if(x.dk<o.ini)o.ini=x.dk;if(x.dk>o.fin)o.fin=x.dk;o.plan+=x.plan.length;o.ok+=x.plan.filter(p=>p.ok).length;o.ext+=x.extras.length;o.vis+=x.vis});
+  const semArr=Object.values(sm).sort((a,b)=>a.ini<b.ini?-1:1);
+  const cls=v=>v>=95?'ok':v>=80?'warn':'bad';
+  const col=v=>v>=95?'#16a34a':v>=80?'#d97706':'#dc2626';
+  const semRows=semArr.slice().reverse().map(w=>{const v=w.plan?pct(w.ok/w.plan):0;return `<tr><td><b>Sem ${w.sem}</b> · ${diaCorto(w.ini)} - ${diaCorto(w.fin)}</td><td class="r">${w.plan}</td><td class="r">${w.ok}</td><td class="r">${w.ext}</td><td class="r"><span class="pill ${cls(v)}">${v}%</span></td></tr>`}).join('');
+  // detalle diario (mas recientes primero)
+  const diasOrd=todos.slice().sort((a,b)=>a.dk<b.dk?1:-1).slice(0,40);
+  const diaRows=diasOrd.map(x=>{
+    const ok=x.plan.filter(p=>p.ok).length,t=x.plan.length;
+    const est=ok===t?'<span class="pill ok">Cumplido</span>':ok===0?'<span class="pill bad">Sin visitas</span>':'<span class="pill warn">Parcial</span>';
+    const chips=x.plan.map(p=>`<span class="rchip ${p.ok?'ok':'miss'}">${esc(p.n)}</span>`).join('')+x.extras.map(e=>`<span class="rchip ext" title="Visita fuera del rutero de ese día">+ ${esc(e)}</span>`).join('');
+    return `<tr><td style="white-space:nowrap"><b>${diaCorto(x.dk)}</b></td><td class="r">${t}</td><td class="r">${ok}</td><td>${est}</td><td>${chips}</td></tr>`;
+  }).join('');
+  const pdvHtml=pdvArr.map(x=>{const v=pct(x.ok/x.plan);return `<div class="rbar"><div class="rn" title="${esc(x.n)}">${esc(x.n)}</div><div class="rt"><i style="width:${v}%;background:${col(v)}"></i></div><div class="rv">${x.ok} de ${x.plan}</div></div>`}).join('');
+  // por mercaderista
+  const mercRows=res.filter(x=>x.dias.length).map(x=>{
+    const p=x.dias.reduce((s,y)=>s+y.plan.length,0),o=x.dias.reduce((s,y)=>s+y.plan.filter(q=>q.ok).length,0),e=x.dias.reduce((s,y)=>s+y.extras.length,0);const v=p?pct(o/p):0;
+    return `<tr><td><b>${esc(x.a.nombre)}</b></td><td class="r">${x.dias.length}</td><td class="r">${p}</td><td class="r">${o}</td><td class="r">${e}</td><td class="r"><span class="pill ${cls(v)}">${v}%</span></td></tr>`;
+  }).join('');
+  const corr=d.filter(r=>r.corregido).length;
+  const cuadra=cumplTot>=100;
+  cont.innerHTML=`
+  <div class="alert-banner ${cuadra?'ok':cumplTot>=90?'':'bad'}"><svg><use href="#i-${cuadra?'check':'alert'}"/></svg><div><b>Cumplimiento de ruta ${cumplTot}% · ${tOk} de ${tP} visitas programadas</b><span>${cuadra?'Toda la ruta programada se visitó en su día':(tP-tOk)+' visitas programadas quedaron sin ejecutar en su día'} · ${tExt} visitas fuera de rutero</span></div></div>
+  <div class="kpis">
+    ${kpi('ic-green','i-route',cumplTot+'%','Cumplimiento',tOk+' de '+tP+' visitas')}
+    ${kpi('ic-blue','i-cal',fN(todos.length),'Días de ruta',diasOk+' completos')}
+    ${kpi('ic-cyan','i-store',pdvCub+' / '+pdvArr.length,'PDVs cubiertos','del rutero')}
+    ${kpi('ic-amber','i-alert',fN(tP-tOk),'Pendientes','programadas sin visita')}
+    ${kpi('ic-purple','i-map',fN(tExt),'Fuera de rutero','visitas adicionales')}
+  </div>
+  <div class="grid g-23">
+    ${card('<svg><use href="#i-bar"/></svg>Plan vs. ejecutado por semana','% de cumplimiento','<div class="h240"><canvas id="chRuta"></canvas></div>')}
+    ${card('<svg><use href="#i-grid"/></svg>Resumen semanal','','<div class="tw"><table><thead><tr><th>Semana</th><th class="r">Plan</th><th class="r">Hechas</th><th class="r">Extra</th><th class="r">%</th></tr></thead><tbody>'+semRows+'</tbody></table></div>')}
+  </div>
+  ${res.filter(x=>x.dias.length).length>1?card('<svg><use href="#i-users"/></svg>Por mercaderista','','<div class="tw"><table><thead><tr><th>Mercaderista</th><th class="r">Días</th><th class="r">Plan</th><th class="r">Hechas</th><th class="r">Extra</th><th class="r">%</th></tr></thead><tbody>'+mercRows+'</tbody></table></div>'):''}
+  <div class="grid g-32">
+    ${card('<svg><use href="#i-store"/></svg>Cumplimiento por PDV','visitas en su día','<div class="scroll-y">'+pdvHtml+'</div>')}
+    ${card('<svg><use href="#i-cal"/></svg>Detalle día a día','últimos '+diasOrd.length+' días de ruta','<div class="tw" style="max-height:420px"><table><thead><tr><th>Día</th><th class="r">Plan</th><th class="r">Hechas</th><th>Estado</th><th>PDV <span class="rchip ok">visitado</span><span class="rchip miss">pendiente</span><span class="rchip ext">extra</span></th></tr></thead><tbody>'+diaRows+'</tbody></table></div>')}
+  </div>
+  <div class="card"><div class="rnote"><b>Cómo se mide.</b> Una visita cuenta como cumplida cuando el PDV programado en el rutero Medellín se visitó el mismo día. Los registros se asignan por mercaderista: Natalia Rueda hasta el 13 de sep y Aninay Pacheco desde el 16 de sep (14 y 15 de sep fueron capacitación). El día en curso no se cuenta hasta que cierra.${corr?`<br><b>Corrección aplicada:</b> ${corr} visitas de Aninay (28 y 30 de sep) se guardaron como Supermercado La 2000 Niquia y corresponden a Comercializadora La 2000, según confirmó PQP.`:''}</div></div>`;
+  CH.ruta=new Chart(document.getElementById('chRuta'),{data:{labels:semArr.map(w=>'Sem '+w.sem),datasets:[
+    {type:'bar',label:'Programadas',data:semArr.map(w=>w.plan),backgroundColor:'rgba(148,163,184,.45)',borderRadius:5,yAxisID:'y'},
+    {type:'bar',label:'Hechas en su día',data:semArr.map(w=>w.ok),backgroundColor:'rgba(29,78,216,.85)',borderRadius:5,yAxisID:'y'},
+    {type:'line',label:'% cumplimiento',data:semArr.map(w=>w.plan?pct(w.ok/w.plan):0),borderColor:'#16a34a',borderWidth:2.5,pointRadius:3,tension:.3,yAxisID:'y1',pointBackgroundColor:'#16a34a'}
+  ]},options:baseOpts({y:{beginAtZero:true,grid:{color:'#f1f5f9'}},y1:{position:'right',min:0,max:100,ticks:{callback:v=>v+'%',font:{size:10}},grid:{drawOnChartArea:false}}})});
+}
+
 // ═══════════ 4. VENTAS ═══════════
 function vVentas(cont,d){
   const vts=d.filter(r=>r.tieneVenta).length,nvts=d.length-vts;
@@ -1214,9 +1342,9 @@ function vVentas(cont,d){
     ${card('<svg><use href="#i-dollar"/></svg>Valor de venta por ciudad','','<div class="h240"><canvas id="chCV"></canvas></div>')}
   </div>`;
 
-  const conV=p.labels.map(k=>d.filter(r=>r.tieneVenta&&r.fecha&&r.fecha.toISOString().slice(0,10)===k).length);
-  const sinV=p.labels.map(k=>d.filter(r=>!r.tieneVenta&&r.fecha&&r.fecha.toISOString().slice(0,10)===k).length);
-  const convPct=p.labels.map(k=>{const tot=d.filter(r=>r.fecha&&r.fecha.toISOString().slice(0,10)===k).length;const vv=d.filter(r=>r.tieneVenta&&r.fecha&&r.fecha.toISOString().slice(0,10)===k).length;return tot?Math.round(vv/tot*100):0});
+  const conV=p.labels.map(k=>d.filter(r=>r.tieneVenta&&r.fecha&&dkey(r.fecha)===k).length);
+  const sinV=p.labels.map(k=>d.filter(r=>!r.tieneVenta&&r.fecha&&dkey(r.fecha)===k).length);
+  const convPct=p.labels.map(k=>{const tot=d.filter(r=>r.fecha&&dkey(r.fecha)===k).length;const vv=d.filter(r=>r.tieneVenta&&r.fecha&&dkey(r.fecha)===k).length;return tot?Math.round(vv/tot*100):0});
   CH.vt=new Chart(document.getElementById('chVT'),{data:{labels:lbl,datasets:[
     {type:'bar',label:'Con venta',data:conV,backgroundColor:'rgba(22,163,74,.8)',borderRadius:5,yAxisID:'y',hoverBackgroundColor:'#16a34a'},
     {type:'bar',label:'Sin venta',data:sinV,backgroundColor:'rgba(220,38,38,.55)',borderRadius:5,yAxisID:'y',hoverBackgroundColor:'#dc2626'},
@@ -1240,7 +1368,7 @@ function vSugerido(cont,d){
 
   // Tendencia por día (solo de pedidos con valor)
   const pDay={};
-  cp.forEach(r=>{if(!r.fecha)return;const k=r.fecha.toISOString().slice(0,10);if(!pDay[k])pDay[k]={n:0,v:0};pDay[k].n++;pDay[k].v+=r.totalPedido});
+  cp.forEach(r=>{if(!r.fecha)return;const k=dkey(r.fecha);if(!pDay[k])pDay[k]={n:0,v:0};pDay[k].n++;pDay[k].v+=r.totalPedido});
   const pKeys=Object.keys(pDay).sort();
   const pLbl=pKeys.map(k=>k.slice(5));
   const pVals=pKeys.map(k=>pDay[k].v);
